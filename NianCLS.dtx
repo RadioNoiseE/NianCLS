@@ -1,0 +1,175 @@
+% \iffalse meta-comment
+%<*internal>
+\iffalse
+%</internal>
+%<*copyright>
+Copyright 2023, RadioNoiseE
+NianCLS, 年文檔類
+%</copyright>
+%<*internal>
+\fi
+\begingroup
+\def\FORMAT{LaTeX2e}
+\expandafter\endgroup
+\ifx\fmtname\FORMAT\else
+\csname fi\endcsname
+%</internal>
+%<*batchfile>
+\input docstrip.tex
+\keepsilent
+\askonceonly
+\edef\HEAD{\perCent\perCent　年文檔類　黄京}
+\generate{
+    \usepreamble\HEAD
+    \usepostamble\empty
+    \file{niancls.cls}{\from{\jobname.dtx}{cls}}
+}
+\begingroup
+\obeyspaces
+\Msg{*******}
+\Msg{* End *}
+\Msg{*******}
+\endgroup
+\endbatchfile
+%</batchfile>
+%<*internal>
+\fi
+%</internal>
+%<*driver>
+\makeatletter
+\def\ltj@stdmcfont{SourceHanSerifSC}
+%%\def\ltj@stdyokojfm{eva/{sc,nstd}}
+\makeatother
+\documentclass{ltjsarticle}
+%%\documentclass{ctxdoc}
+\usepackage{doc}
+\EnableCrossrefs
+\CodelineIndex
+\RecordChanges
+%%\def\PrintDescribeMacro{}
+%%\def\PrintDescribeEnv{}
+%%\def\PrintMacroName{}
+%%\def\PrintEnvName{}
+\usepackage{luatexja-fontspec}
+%%\usepackage{fontspec}
+\setmainfont{Linux Libertine O}
+\setmainjfont{SourceHan Serif SC}[YokoFeatures={JFM={eva/{sc,nstd}}}]
+\setsansfont{Linux Biolinum O}
+%%\setmonofont{Iosevka Slab}[Scale=MatchLowercase, FakeStretch=1.138]
+\setmonofont{Fira Code}[Scale=MatchLowercase]
+\def\LuaTeX{Lua\kern-.2ex\TeX}
+\begin{document}
+\DocInput{\jobname.dtx}
+\PrintIndex
+\end{document}
+%</driver>
+% \fi
+% \title{\sffamily\gtfamily 年文檔類{\quad}Nian{\it CLS}}
+% \author{黄京}
+% \date{西曆2023年}
+% \maketitle
+% \begin{abstract}
+% 为在{\LuaTeX}下排印中日文本而作的文档类。基于{\sffamily expl3}构建。
+% \end{abstract}
+% \section{初始化}
+% \subsection{載入{\LaTeX3}並檢驗依賴}
+%    \begin{macrocode}
+%<@@=ncls>
+\NeedsTeXFormat{LaTeX2e}
+\RequirePackage{expl3}
+\ProvidesExplClass{niancls}{2023-03-24}{1.0.0}{Nian Document Class}
+\prop_gput:Nnn \g_msg_module_name_prop { ncls } { niancls }
+%    \end{macrocode}
+% 申明结束。接下来检查依赖，首先为{\sffamily xparse}及{\sffamily l3keys2e}宏包。
+%    \begin{macrocode}
+\cs_if_exist:NF \NewDocumentCommand
+  { \RequirePackage { xparse } }
+\RequirePackage { l3keys2e }
+%    \end{macrocode}
+% 接下来检查{\sffamily expl3}的版本。
+%    \begin{macrocode}
+\@ifpackagelater { expl3 } { 2021-02-10 } { }
+  {
+    \msg_new:nnnn { ncls } { latex3-too-old }
+      { Package~`l3kernel'~and~`l3packages'~too~old. }
+      {
+        You~need~to~update~your~installation~of~the~bundles~
+        `l3kernel'~and~`l3packages'. \\
+        Loading~niancls~will~abort!
+      }
+    \msg_critical:nn { ncls } { latex3-too-old }
+  }
+%    \end{macrocode}
+% 后进行{\LaTeXe}格式之版本检查。
+%    \begin{macrocode}
+\@ifl@t@r \fmtversion { 2021-06-01 } { }
+  {
+    \msg_new:nnnn { ncls } { latex-too-old }
+      { Format~LaTeX2e~version~too~old. }
+      {
+        You~need~to~update~your~LaTeX2e~to~the~latest~release. \\
+        Loading~niancls~will~abort!
+      }
+    \msg_critical:nn { ncls } { latex-too-old }
+  }
+%    \end{macrocode}
+% 最后检查{\LaTeX}引擎，仅支持使用{\LuaTeX}编译。
+%    \begin{macrocode}
+\sys_if_engine_luatex:TF { }
+  {
+    \msg_new:nnnn { ncls } { unsupported-engine }
+      { LuaTeX~is~the~only~supported~engine~for~niancls. }
+      {
+        You~should~switch~to~LuaTeX~to~use~niancls. \\
+        Loading~niancls~will~abort!
+      }
+    \msg_fatel:nn { ncls } { unsupported-engine }
+  }
+%    \end{macrocode}
+% \subsection{私有定義}
+% 定义\verb|\AtEndOfClass|钩子。
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_at_end:n { \AtEndOfClass }
+%    \end{macrocode}
+% 定义用于在读取结束后释放缓存的宏。
+%    \begin{macrocode}
+\seq_new:N \g_@@_aftercls_del_seq
+\cs_set:Nn \@@_aftercls_addtodel:N
+  { \seq_gput_right:Nn \g_@@_aftercls_del_seq { #1 } }
+\@@_aftercls_addtodel:N \@@_aftercls_addtodel:N
+\@@_at_end:n
+  {
+    \cs_undefine:N \g_@@_aftercls_del_seq
+  }
+%    \end{macrocode}
+% \section{主要特性}
+% \subsection{紙張配置}
+% 申明存储纸张尺寸信息的特性列表。
+%    \begin{macrocode}
+\prop_new:N \g_@@_papersizelist_prop
+\tl_new:N \g_@@_papersizeinfo_tl
+%    \end{macrocode}
+% 随后定义用于处理尺寸信息的宏。
+%    \begin{macrocode}
+\cs_set:Nn \@@_addpapersize:nnn
+  {
+    \prop_put_if_new:Nnn \g_@@_papersizelist_prop
+      { #1 }
+      { { #2 }, { #3 } }
+  }
+%    \end{macrocode}
+% 于键对值列表中定义\verb|paper|键处理纸张信息之配置。
+%    \begin{macrocode}
+\keys_define:nn { ncls }
+  {
+    paper .code:n = \tl_gset:Nn \g_@@_papersizeinfo_tl { #1 },
+    paper .default:n = a4paper,
+    paper .value_required:n = false
+  }
+%    \end{macrocode}
+% 处理并设置尺寸信息。
+%    \begin{macrocode}
+\prop_if_in:NnTF \g_@@_papersizelist_prop { 
+\pdf_pagesize_gset:nn { } { }
+%    \end{macrocode}
+\endinput

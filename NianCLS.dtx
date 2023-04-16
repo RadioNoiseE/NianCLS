@@ -58,6 +58,9 @@ NianCLS, 年文檔類
 \setmonofont{Iosevka Slab}[Scale=MatchLowercase, FakeStretch=1.138]
 %%\setmonofont{Fira Code}[Scale=MatchLowercase]
 \def\LuaTeX{Lua\kern-.2ex\TeX}
+\makeatletter
+\def\theCodelineNo{\llap{\reset@font\tiny\arabic{CodelineNo}\hskip12pt}}
+\makeatother
 \parindent=0pt
 \begin{document}
 \DocInput{\jobname.dtx}
@@ -65,8 +68,8 @@ NianCLS, 年文檔類
 \end{document}
 %</driver>
 % \fi
-% \title{\sffamily\gtfamily 年文檔類{\quad}Nian{\it CLS}}
-% \author{黄京}
+% \title{\sffamily\gtfamily 年文檔類{\quad}Nian Class}
+% \author{黄　京}
 % \date{西曆2023年}
 % \maketitle
 % \begin{abstract}
@@ -75,17 +78,23 @@ NianCLS, 年文檔類
 % \section{初始化}
 % \subsection{載入{\LaTeX3}並檢驗依賴}
 %    \begin{macrocode}
-%<@@=ncls>
 \NeedsTeXFormat{LaTeX2e}
 \RequirePackage{expl3}
 \ProvidesExplClass{niancls}{2023-04-15}{1.0.0}{Nian Document Class}
+%    \end{macrocode}
+% 定义载入文档类信息等。
+%    \begin{macrocode}
+%<@@=ncls>
 \prop_gput:Nnn \g_msg_module_name_prop { ncls } { niancls }
 %    \end{macrocode}
-% 申明结束。接下来检查依赖，首先为{\sffamily xparse}及{\sffamily l3keys2e}宏包。
+% 申明结束。接下来检查依赖，首先为{\sffamily xparse}、{\sffamily l3keys2e}及{\sffamily etoolbox}宏包。
 %    \begin{macrocode}
 \cs_if_exist:NF \NewDocumentCommand
   { \RequirePackage { xparse } }
-\RequirePackage { l3keys2e }
+\cs_if_exist:NF \ProcessKeyOptions
+  { \RequirePackage { l3keys2e } }
+\cs_if_exist:NF \AtEndPreamble
+  { \RequirePackage { etoolbox } }
 %    \end{macrocode}
 % 接下来检查{\sffamily expl3}的版本。
 %    \begin{macrocode}
@@ -116,7 +125,7 @@ NianCLS, 年文檔類
 %    \end{macrocode}
 % 最后检查{\LaTeX}引擎，仅支持使用{\LuaTeX}编译。
 %    \begin{macrocode}
-\sys_if_engine_luatex:TF { }
+\sys_if_engine_luatex:F
   {
     \msg_new:nnnn { ncls } { unsupported-engine }
       { LuaTeX~is~the~only~supported~engine~for~niancls. }
@@ -128,9 +137,13 @@ NianCLS, 年文檔類
   }
 %    \end{macrocode}
 % \subsection{私有定義}
-% 定义\verb|\AtEndOfClass|钩子。
+% 定义\verb|\AtEndPreamble|钩子。
 %    \begin{macrocode}
-\cs_new_protected:Npn \@@_at_end:n { \AtEndOfClass }
+\cs_new_protected:Npn \@@_preamble_end:n { \AtEndPreamble }
+%    \end{macrocode}
+% 「疑」定义\verb|\AtEndOfClass|钩子。
+%    \begin{macrocode}
+% \cs_new_protected:Npn \@@_at_end:n { \AtEndOfClass }
 %    \end{macrocode}
 % 定义\verb|\AtBeginDocument|钩子。
 %    \begin{macrocode}
@@ -142,9 +155,11 @@ NianCLS, 年文檔類
 \cs_set:Nn \@@_aftercls_addtodel:N
   { \seq_gput_right:Nn \g_@@_aftercls_del_seq { #1 } }
 \@@_aftercls_addtodel:N \@@_aftercls_addtodel:N
-\@@_at_end:n
+\@@_preamble_end:n
   {
+    \ExplSyntaxOn
     \cs_undefine:N \g_@@_aftercls_del_seq
+    \ExplSyntaxOff
   }
 %    \end{macrocode}
 % 封装{\LuaTeX}提供的Lua接口。
@@ -263,27 +278,27 @@ NianCLS, 年文檔類
 % \subsubsection{尺寸參數設定}
 % 通过\verb|\__ncls_addpapersize:nnn|设置具体参数。
 %    \begin{macrocode}
-\@@_addpapersize:nnn { a0 } { 841 mm } { 1189 mm }
-\@@_addpapersize:nnn { a1 } { 594 mm } {  841 mm }
-\@@_addpapersize:nnn { a2 } { 420 mm } {  594 mm }
-\@@_addpapersize:nnn { a3 } { 297 mm } {  420 mm }
-\@@_addpapersize:nnn { a4 } { 210 mm } {  297 mm }
-\@@_addpapersize:nnn { a5 } { 148 mm } {  210 mm }
-\@@_addpapersize:nnn { a6 } { 105 mm } {  148 mm }
-\@@_addpapersize:nnn { b0 } { 1000 mm } { 1414 mm }
-\@@_addpapersize:nnn { b1 } {  707 mm } { 1000 mm }
-\@@_addpapersize:nnn { b2 } {  500 mm } {  707 mm }
-\@@_addpapersize:nnn { b3 } {  353 mm } {  500 mm }
-\@@_addpapersize:nnn { b4 } {  250 mm } {  353 mm }
-\@@_addpapersize:nnn { b5 } {  176 mm } {  250 mm }
-\@@_addpapersize:nnn { b6 } {  125 mm } {  176 mm }
-\@@_addpapersize:nnn { c0 } { 917 mm } { 1297 mm }
-\@@_addpapersize:nnn { c1 } { 648 mm } {  917 mm }
-\@@_addpapersize:nnn { c2 } { 458 mm } {  648 mm }
-\@@_addpapersize:nnn { c3 } { 324 mm } {  458 mm }
-\@@_addpapersize:nnn { c4 } { 229 mm } {  324 mm }
-\@@_addpapersize:nnn { c5 } { 162 mm } {  229 mm }
-\@@_addpapersize:nnn { c6 } { 114 mm } {  162 mm }
+\@@_addpapersize:nnn {  a0 } {  841 mm } { 1189 mm }
+\@@_addpapersize:nnn {  a1 } {  594 mm } {  841 mm }
+\@@_addpapersize:nnn {  a2 } {  420 mm } {  594 mm }
+\@@_addpapersize:nnn {  a3 } {  297 mm } {  420 mm }
+\@@_addpapersize:nnn {  a4 } {  210 mm } {  297 mm }
+\@@_addpapersize:nnn {  a5 } {  148 mm } {  210 mm }
+\@@_addpapersize:nnn {  a6 } {  105 mm } {  148 mm }
+\@@_addpapersize:nnn {  b0 } { 1000 mm } { 1414 mm }
+\@@_addpapersize:nnn {  b1 } {  707 mm } { 1000 mm }
+\@@_addpapersize:nnn {  b2 } {  500 mm } {  707 mm }
+\@@_addpapersize:nnn {  b3 } {  353 mm } {  500 mm }
+\@@_addpapersize:nnn {  b4 } {  250 mm } {  353 mm }
+\@@_addpapersize:nnn {  b5 } {  176 mm } {  250 mm }
+\@@_addpapersize:nnn {  b6 } {  125 mm } {  176 mm }
+\@@_addpapersize:nnn {  c0 } {  917 mm } { 1297 mm }
+\@@_addpapersize:nnn {  c1 } {  648 mm } {  917 mm }
+\@@_addpapersize:nnn {  c2 } {  458 mm } {  648 mm }
+\@@_addpapersize:nnn {  c3 } {  324 mm } {  458 mm }
+\@@_addpapersize:nnn {  c4 } {  229 mm } {  324 mm }
+\@@_addpapersize:nnn {  c5 } {  162 mm } {  229 mm }
+\@@_addpapersize:nnn {  c6 } {  114 mm } {  162 mm }
 \@@_addpapersize:nnn { b0j } { 1030 mm } { 1456 mm }
 \@@_addpapersize:nnn { b1j } {  728 mm } { 1030 mm }
 \@@_addpapersize:nnn { b2j } {  515 mm } {  728 mm }
@@ -292,5 +307,18 @@ NianCLS, 年文檔類
 \@@_addpapersize:nnn { b5j } {  182 mm } {  257 mm }
 \@@_addpapersize:nnn { b6j } {  128 mm } {  182 mm }
 \@@_addpapersize:nnn { screen } { 225 mm } { 180 mm }
+%    \end{macrocode}
+% \subsubsection{清除內存}
+% 并做好内存管理。
+%    \begin{macrocode}
+\@@_aftercls_addtodel:N \@@_addpapersize:nnn 
+\@@_aftercls_addtodel:N \g_@@_papersizelist_prop
+\@@_aftercls_addtodel:N \g_@@_papersizeinfo_tl
+\@@_aftercls_addtodel:N \g_@@_papersizeaux_tl
+\@@_aftercls_addtodel:N \g_@@_papersizeconf_clist
+\@@_aftercls_addtodel:N \g_@@_paperwidth_dim
+\@@_aftercls_addtodel:N \g_@@_paperheight_dim
+\@@_aftercls_addtodel:N \l_@@_paperwidthaux_tl
+\@@_aftercls_addtodel:N \l_@@_paperheightaux_tl
 %    \end{macrocode}
 \endinput

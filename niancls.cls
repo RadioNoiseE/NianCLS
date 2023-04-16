@@ -5,7 +5,10 @@
 \prop_gput:Nnn \g_msg_module_name_prop { ncls } { niancls }
 \cs_if_exist:NF \NewDocumentCommand
   { \RequirePackage { xparse } }
-\RequirePackage { l3keys2e }
+\cs_if_exist:NF \ProcessKeyOptions
+  { \RequirePackage { l3keys2e } }
+\cs_if_exist:NF \AtEndPreamble
+  { \RequirePackage { etoolbox } }
 \@ifpackagelater { expl3 } { 2021-02-10 } { }
   {
     \msg_new:nnnn { ncls } { latex3-too-old }
@@ -27,7 +30,7 @@
       }
     \msg_critical:nn { ncls } { latex-too-old }
   }
-\sys_if_engine_luatex:TF { }
+\sys_if_engine_luatex:F
   {
     \msg_new:nnnn { ncls } { unsupported-engine }
       { LuaTeX~is~the~only~supported~engine~for~niancls. }
@@ -37,15 +40,17 @@
       }
     \msg_fatel:nn { ncls } { unsupported-engine }
   }
-\cs_new_protected:Npn \__ncls_at_end:n { \AtEndOfClass }
+\cs_new_protected:Npn \__ncls_preamble_end:n { \AtEndPreamble }
 \cs_new_protected:Npn \__ncls_doc_beg:n { \AtBeginDocument }
 \seq_new:N \g__ncls_aftercls_del_seq
 \cs_set:Nn \__ncls_aftercls_addtodel:N
   { \seq_gput_right:Nn \g__ncls_aftercls_del_seq { #1 } }
 \__ncls_aftercls_addtodel:N \__ncls_aftercls_addtodel:N
-\__ncls_at_end:n
+\__ncls_preamble_end:n
   {
+    \ExplSyntaxOn
     \cs_undefine:N \g__ncls_aftercls_del_seq
+    \ExplSyntaxOff
   }
 \cs_new:Npn \__ncls_luafunc_new:N { \newluafunction }
 \cs_new:Npn \__ncls_luafunc_use:N { \luafunction }
@@ -69,7 +74,7 @@
       { #1 }
       { { #2 }, { #3 } }
   }
-  % \subsubsection{键对值用户接口}
+  % \subsubsection{鍵對直用戶接口}
 \keys_define:nn { ncls }
   {
     paper .tl_gset:N = \g__ncls_papersizeinfo_tl,
@@ -120,27 +125,27 @@
 \pdf_pagesize_gset:nn
   { \dim_use:N \g__ncls_paperwidth_dim }
   { \dim_use:N \g__ncls_paperheight_dim }
-\__ncls_addpapersize:nnn { a0 } { 841 mm } { 1189 mm }
-\__ncls_addpapersize:nnn { a1 } { 594 mm } {  841 mm }
-\__ncls_addpapersize:nnn { a2 } { 420 mm } {  594 mm }
-\__ncls_addpapersize:nnn { a3 } { 297 mm } {  420 mm }
-\__ncls_addpapersize:nnn { a4 } { 210 mm } {  297 mm }
-\__ncls_addpapersize:nnn { a5 } { 148 mm } {  210 mm }
-\__ncls_addpapersize:nnn { a6 } { 105 mm } {  148 mm }
-\__ncls_addpapersize:nnn { b0 } { 1000 mm } { 1414 mm }
-\__ncls_addpapersize:nnn { b1 } {  707 mm } { 1000 mm }
-\__ncls_addpapersize:nnn { b2 } {  500 mm } {  707 mm }
-\__ncls_addpapersize:nnn { b3 } {  353 mm } {  500 mm }
-\__ncls_addpapersize:nnn { b4 } {  250 mm } {  353 mm }
-\__ncls_addpapersize:nnn { b5 } {  176 mm } {  250 mm }
-\__ncls_addpapersize:nnn { b6 } {  125 mm } {  176 mm }
-\__ncls_addpapersize:nnn { c0 } { 917 mm } { 1297 mm }
-\__ncls_addpapersize:nnn { c1 } { 648 mm } {  917 mm }
-\__ncls_addpapersize:nnn { c2 } { 458 mm } {  648 mm }
-\__ncls_addpapersize:nnn { c3 } { 324 mm } {  458 mm }
-\__ncls_addpapersize:nnn { c4 } { 229 mm } {  324 mm }
-\__ncls_addpapersize:nnn { c5 } { 162 mm } {  229 mm }
-\__ncls_addpapersize:nnn { c6 } { 114 mm } {  162 mm }
+\__ncls_addpapersize:nnn {  a0 } {  841 mm } { 1189 mm }
+\__ncls_addpapersize:nnn {  a1 } {  594 mm } {  841 mm }
+\__ncls_addpapersize:nnn {  a2 } {  420 mm } {  594 mm }
+\__ncls_addpapersize:nnn {  a3 } {  297 mm } {  420 mm }
+\__ncls_addpapersize:nnn {  a4 } {  210 mm } {  297 mm }
+\__ncls_addpapersize:nnn {  a5 } {  148 mm } {  210 mm }
+\__ncls_addpapersize:nnn {  a6 } {  105 mm } {  148 mm }
+\__ncls_addpapersize:nnn {  b0 } { 1000 mm } { 1414 mm }
+\__ncls_addpapersize:nnn {  b1 } {  707 mm } { 1000 mm }
+\__ncls_addpapersize:nnn {  b2 } {  500 mm } {  707 mm }
+\__ncls_addpapersize:nnn {  b3 } {  353 mm } {  500 mm }
+\__ncls_addpapersize:nnn {  b4 } {  250 mm } {  353 mm }
+\__ncls_addpapersize:nnn {  b5 } {  176 mm } {  250 mm }
+\__ncls_addpapersize:nnn {  b6 } {  125 mm } {  176 mm }
+\__ncls_addpapersize:nnn {  c0 } {  917 mm } { 1297 mm }
+\__ncls_addpapersize:nnn {  c1 } {  648 mm } {  917 mm }
+\__ncls_addpapersize:nnn {  c2 } {  458 mm } {  648 mm }
+\__ncls_addpapersize:nnn {  c3 } {  324 mm } {  458 mm }
+\__ncls_addpapersize:nnn {  c4 } {  229 mm } {  324 mm }
+\__ncls_addpapersize:nnn {  c5 } {  162 mm } {  229 mm }
+\__ncls_addpapersize:nnn {  c6 } {  114 mm } {  162 mm }
 \__ncls_addpapersize:nnn { b0j } { 1030 mm } { 1456 mm }
 \__ncls_addpapersize:nnn { b1j } {  728 mm } { 1030 mm }
 \__ncls_addpapersize:nnn { b2j } {  515 mm } {  728 mm }
@@ -149,3 +154,12 @@
 \__ncls_addpapersize:nnn { b5j } {  182 mm } {  257 mm }
 \__ncls_addpapersize:nnn { b6j } {  128 mm } {  182 mm }
 \__ncls_addpapersize:nnn { screen } { 225 mm } { 180 mm }
+\__ncls_aftercls_addtodel:N \__ncls_addpapersize:nnn
+\__ncls_aftercls_addtodel:N \g__ncls_papersizelist_prop
+\__ncls_aftercls_addtodel:N \g__ncls_papersizeinfo_tl
+\__ncls_aftercls_addtodel:N \g__ncls_papersizeaux_tl
+\__ncls_aftercls_addtodel:N \g__ncls_papersizeconf_clist
+\__ncls_aftercls_addtodel:N \g__ncls_paperwidth_dim
+\__ncls_aftercls_addtodel:N \g__ncls_paperheight_dim
+\__ncls_aftercls_addtodel:N \l__ncls_paperwidthaux_tl
+\__ncls_aftercls_addtodel:N \l__ncls_paperheightaux_tl

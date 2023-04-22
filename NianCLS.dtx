@@ -91,8 +91,12 @@ NianCLS, 年文檔類
 %    \begin{macrocode}
 \cs_if_exist:NF \NewDocumentCommand
   { \RequirePackage { xparse } }
-\cs_if_exist:NF \ProcessKeyOptions
-  { \RequirePackage { l3keys2e } }
+\cs_if_exist:NTF \ProcessKeyOptions
+  { \cs_new:Nn \@@_keyoptions_process:n { \ProcessKeyOptions { #1 } } }
+  {
+    \RequirePackage { l3keys2e }
+    \cs_new:Nn \@@_keyoptions_process:n { \ProcessKeysOptions { #1 } }
+  }
 \cs_if_exist:NF \AtEndPreamble
   { \RequirePackage { etoolbox } }
 %    \end{macrocode}
@@ -147,14 +151,13 @@ NianCLS, 年文檔類
 %    \end{macrocode}
 % 定义\verb|\AtBeginDocument|钩子。
 %    \begin{macrocode}
-\cs_new_protected:Npn \@@_doc_beg:n { \AtBeginDocument }
+\cs_new_protected:Npn \:n { \AtBeginDocument }
 %    \end{macrocode}
 % 定义用于在读取结束后释放缓存的宏。
 %    \begin{macrocode}
 \seq_new:N \g_@@_aftercls_del_seq
 \cs_set:Nn \@@_aftercls_addtodel:N
   { \seq_gput_right:Nn \g_@@_aftercls_del_seq { #1 } }
-\@@_aftercls_addtodel:N \@@_aftercls_addtodel:N
 \@@_preamble_end:n
   {
     \ExplSyntaxOn
@@ -176,18 +179,148 @@ NianCLS, 年文檔類
     while~you~gave:~#3.
   }
 %    \end{macrocode}
+% \subsection{內存清理}
+% 在导言区末尾清除所有非必要宏。
+%    \begin{macrocode}
+\@@_aftercls_addtodel:N \@@_keyoptions_process:n
+\@@_aftercls_addtodel:N \@@_preamble_end:n
+% \@@_aftercls_addtodel:N \@@_at_end:n
+\@@_aftercls_addtodel:N \@@_at_doc_begin:n
+\@@_aftercls_addtodel:N \@@_aftercls_addtodel:N
+\@@_aftercls_addtodel:N \@@_luafunc_new:N
+\@@_aftercls_addtodel:N \@@_luafunc_use:N
+%    \end{macrocode}
+% \section{鍵對直之「預處理」}
+% \subsection{紙張配置用}
+% \subsubsection{尺寸信息}
+% 处理纸张尺寸信息。
+%    \begin{macrocode}
+\tl_new:N \g_@@_papersizeinfo_tl
+\keys_define:nn { ncls }
+  {
+    paper .tl_gset:N = \g_@@_papersizeinfo_tl,
+    paper .value_required:n = true,
+    peper .initial:n = { a4 }
+  }
+%    \end{macrocode}
+% \subsubsection{頁面方向}
+% 設置页面方向。
+%    \begin{macrocode}
+\bool_new:N \g_@@_paper_portrait_bool
+\keys_define:nn { ncls }
+  {
+    orientation .choice:,
+    orientation / portrait .code:n = { \bool_gset_true:N \g_@@_paper_portrait_bool },
+    orientation / landscape .code:n = { \bool_gset_false:N \g_@@_paper_portrait_bool },
+    orientation / unknown .code:n =
+      {
+        \msg_error:nnxxx { ncls } { unknown-choice }
+          { orientation }
+          { portrait,~landscape }
+          { \exp_not:n { #1 } }
+      },
+    orientation .value_required:n = true,
+    orientation .initial:n = { portrait }
+  }
+%    \end{macrocode}
+% \subsection{組版方向}
+% 确定使用竖书或是横排。
+%    \begin{macrocode}
+\bool_new:N \g_@@_dir_tate_bool
+\keys_define:nn { ncls }
+  {
+    direction .choice:,
+    direction / yoko .code:n = { \bool_gset_false:N \g_@@_dir_tate_bool },
+    direction / tate .code:n = { \bool_gset_true:N \g_@@_dir_tate_bool },
+    direction / unknown .code =
+      {
+        \msg_new:nnxxx { ncls } { unknown-choice }
+          { direction }
+          { yoko,~tate }
+          { \exp_not:n { #1 } }
+      },
+    direction .value_required:n = true,
+    direction .initial:n = { yoko }
+  }
+%    \end{macrocode}
+% \subsection{字體相關配置用}
+% \subsubsection{全局基準字體參數設定}
+% 处理用户所需的全局基准字体设置。
+%    \begin{macrocode}
+\tl_new:N \g_@@_font_magscale_tl
+\keys_define:nn { ncls }
+  {
+    fontsize .choice:,
+    fontsize /  7pt .code:n = { \tl_gset:Nn \g_@@_font_magscale_tl { 0.6940 } },
+    fontsize /  8pt .code:n = { \tl_gset:Nn \g_@@_font_magscale_tl { 0.8330 } },
+    fontsize /  9pt .code:n = { \tl_gset:Nn \g_@@_font_magscale_tl { 0.9130 } },
+    fontsize / 10pt .code:n = { \tl_gset:Nn \g_@@_font_magscale_tl { 1.0000 } },
+    fontsize / 11pt .code:n = { \tl_gset:Nn \g_@@_font_magscale_tl { 1.0953 } },
+    fontsize / 12pt .code:n = { \tl_gset:Nn \g_@@_font_magscale_tl { 1.2000 } },
+    fontsize / 13pt .code:n = { \tl_gset:Nn \g_@@_font_magscale_tl { 1.3000 } },
+    fontsize / 14pt .code:n = { \tl_gset:Nn \g_@@_font_magscale_tl { 1.4400 } },
+    fontsize / 15pt .code:n = { \tl_gset:Nn \g_@@_font_magscale_tl { 1.5000 } },
+    fontsize / 16pt .code:n = { \tl_gset:Nn \g_@@_font_magscale_tl { 1.6000 } },
+    fontsize / 17pt .code:n = { \tl_gset:Nn \g_@@_font_magscale_tl { 1.7280 } },
+    fontsize / 20pt .code:n = { \tl_gset:Nn \g_@@_font_magscale_tl { 2.0000 } },
+    fontsize / 21pt .code:n = { \tl_gset:Nn \g_@@_font_magscale_tl { 2.0740 } },
+    fontsize / 24pt .code:n = { \tl_gset:Nn \g_@@_font_magscale_tl { 2.4000 } },
+    fontsize / 25pt .code:n = { \tl_gset:Nn \g_@@_font_magscale_tl { 2.4880 } },
+    fontsize / 30pt .code:n = { \tl_gset:Nn \g_@@_font_magscale_tl { 2.9860 } },
+    fontsize / 36pt .code:n = { \tl_gset:Nn \g_@@_font_magscale_tl { 3.5830 } },
+    fontsize / 43pt .code:n = { \tl_gset:Nn \g_@@_font_magscale_tl { 4.3000 } },
+    fontsize / unknown .code:n =
+      {
+        \msg_error:nnxxx { ncls } { unknown-choice }
+          { fontsize }
+          {
+             7pt,~  8pt,~  9pt,~ 10pt,~ 11pt,~ 12pt,~ 13pt,~ 14pt,~ 15pt,~
+            17pt,~ 20pt,~ 21pt,~ 24pt,~ 25pt,~ 30pt,~ 36pt,~ 43pt
+          }
+          { \exp_not:n { #1 } }
+      },
+    fontsize .value_required:n = true,
+    fontsize .initial:n = { 10pt }
+  }
+%    \end{macrocode}
+% \subsubsection{語言設定}
+% 设置文档类之全局语言。
+%    \begin{macrocode}
+\bool_new:N \g_@@_lang_trad_bool
+\bool_new:N \g_@@_lang_smpl_bool
+\bool_new:N \g_@@_lang_jp_bool
+\keys_define:nn { ncls }
+  {
+    language .choice:,
+    language / trad .code:n = { \bool_gset_true:N \g_@@_lang_trad_bool },
+    language / smpl .code:n = { \bool_gset_true:N \g_@@_lang_smpl_bool },
+    language / jp .code:n = { \bool_gset_true:N \g_@@_lang_jp_bool },
+    language / unknown .code:n =
+      {
+        \msg_error:nnxxx { ncls } { unknown-choice }
+          { language }
+          { trad,~smpl,~jp }
+          { \exp_not:n { #1 } }
+      },
+    language .value_required:n = true,
+    language .initial:n = { jp }
+  }
+%    \end{macrocode}
+% \subsection{初始化處理}
+% 使用封裝的宏處理用戶設置。
+%    \begin{macrocode}
+\@@_keyoptions_process:n { ncls }
+%    \end{macrocode}
 % \section{主要特性}
-% \subsection{紙張配置}
+% \subsection{紙張尺寸配置}
 % \subsubsection{全局宏申明}
 % 申明存储纸张尺寸信息的特性列表。
 %    \begin{macrocode}
 \prop_new:N \g_@@_papersizelist_prop
 %    \end{macrocode}
-% 用户指定、暂时存储的字列表，存储最终数据的逗号列表及纸长度及宽度的全局申明。
+% 用户指定、暂时存储的字列表已定义，此处存储最终数据的逗号列表及纸长度及宽度的全局申明。
 %    \begin{macrocode}
-\tl_new:N \g_@@_papersizeinfo_tl
-\tl_new:N \g_@@_papersizeaux_tl
-\tl_new:N \g_@@_papersizeconf_clist
+\clist_new:N \g_@@_papersizeconf_clist
 \dim_new:N \g_@@_paperwidth_dim
 \dim_new:N \g_@@_paperheight_dim
 %    \end{macrocode}
@@ -199,73 +332,46 @@ NianCLS, 年文檔類
 % \subsubsection{主要功能宏}
 % 随后定义用于添加尺寸信息的宏。
 %    \begin{macrocode}
-\cs_set:Nn \@@_addpapersize:nnn
+\cs_new:Nn \@@_addpapersize:nnn
   {
     \prop_put_if_new:Nnn \g_@@_papersizelist_prop
       { #1 }
       { { #2 }, { #3 } }
   }
 %    \end{macrocode}
-  % \subsubsection{鍵對直用戶接口}
-% 于键对值列表中定义\verb|paper|键处理纸张信息之配置。
-%    \begin{macrocode}
-\keys_define:nn { ncls }
-  {
-    paper .tl_gset:N = \g_@@_papersizeinfo_tl,
-    paper .value_required:n = true,
-    paper .initial:n = { a4 }
-  }
-%    \end{macrocode}
 % \subsubsection{內部參數處理}
 % 处理用户设定「一」：处理键对值列表的两种分支情况。
 %    \begin{macrocode}
-\prop_if_in:NoTF \g_@@_papersizelist_prop
+\prop_if_in:NoT \g_@@_papersizelist_prop
   { \tl_to_str:N \g_@@_papersizeinfo_tl }
   {
     \prop_get:NoN \g_@@_papersizelist_prop
       { \tl_to_str:N \g_@@_papersizeinfo_tl }
-      \g_@@_papersizeaux_tl
-  }
-  {
-    \tl_gset_eq:NN \g_@@_papersizeaux_tl \g_@@_papersizeinfo_tl
+      \g_@@_papersizeinfo_tl
   }
 %    \end{macrocode}
 % 处理用户设定「二」：处理字列表，使用逗号列表将长、宽分离。
 %    \begin{macrocode}
 \clist_gset:Nx \g_@@_papersizeconf_clist
-  { \g_@@_papersizeaux_tl }
+  { \g_@@_papersizeinfo_tl }
 \clist_gpop \g_@@_papersizeconf_clist \l_@@_paperwidthaux_tl
 \clist_gpop \g_@@_papersizeconf_clist \l_@@_paperheightaux_tl
 %    \end{macrocode}
 % \subsubsection{頁面方向}
 % 处理页面方向选项。
 %    \begin{macrocode}
-\keys_define:nn { ncls }
+\bool_if:NTF \g_@@_paper_portrait_bool
   {
-    orientation .choice:,
-    orientation / portrait .code:n =
-      {
-        \dim_gset:Nn \g_@@_paperwidth_dim
-          { \tl_use:N \l_@@_paperwidthaux_tl~mm }
-        \dim_gset:Nn \g_@@_paperheight_dim
-          { \tl_use:N \l_@@_paperheightaux_tl~mm }
-      },
-    orientation / landscape .code:n =
-      {
-        \dim_gset:Nn \g_@@_paperwidth_dim
-          { \tl_use:N \l_@@_paperheightaux_tl }
-        \dim_gset:Nn \g_@@_paperheight_dim
-          { \tl_use:N \l_@@_paperwidthaux_tl }
-      },
-    orientation / unknown .code:n =
-      {
-        \msg_error:nnxxx { ncls } { unknown-choice }
-          { orientation }
-          { portrait, landscape }
-          { \exp_not:n { #1 } }
-      },
-    orientation .value_required:n = true,
-    orientation .initial:n = { portrait }
+    \dim_gset:Nn \g_@@_paperwidth_dim
+      { \tl_use:N \l_@@_paperwidthaux_tl }
+    \dim_gset:Nn \g_@@_paperheight_dim
+      { \tl_use:N \l_@@_paperheightaux_tl }
+  }
+  {
+    \dim_gset:Nn \g_@@_paperwidth_dim
+      { \tl_use:N \l_@@_paperheightaux_tl }
+    \dim_gset:Nn \g_@@_paperheight_dim
+      { \tl_use:N \l_@@_paperwidthaux_tl }
   }
 %    \end{macrocode}
 % \subsubsection{完成設置}
@@ -278,27 +384,27 @@ NianCLS, 年文檔類
 % \subsubsection{尺寸參數設定}
 % 通过\verb|\__ncls_addpapersize:nnn|设置具体参数。
 %    \begin{macrocode}
-\@@_addpapersize:nnn {  a0 } {  841 mm } { 1189 mm }
-\@@_addpapersize:nnn {  a1 } {  594 mm } {  841 mm }
-\@@_addpapersize:nnn {  a2 } {  420 mm } {  594 mm }
-\@@_addpapersize:nnn {  a3 } {  297 mm } {  420 mm }
-\@@_addpapersize:nnn {  a4 } {  210 mm } {  297 mm }
-\@@_addpapersize:nnn {  a5 } {  148 mm } {  210 mm }
-\@@_addpapersize:nnn {  a6 } {  105 mm } {  148 mm }
-\@@_addpapersize:nnn {  b0 } { 1000 mm } { 1414 mm }
-\@@_addpapersize:nnn {  b1 } {  707 mm } { 1000 mm }
-\@@_addpapersize:nnn {  b2 } {  500 mm } {  707 mm }
-\@@_addpapersize:nnn {  b3 } {  353 mm } {  500 mm }
-\@@_addpapersize:nnn {  b4 } {  250 mm } {  353 mm }
-\@@_addpapersize:nnn {  b5 } {  176 mm } {  250 mm }
-\@@_addpapersize:nnn {  b6 } {  125 mm } {  176 mm }
-\@@_addpapersize:nnn {  c0 } {  917 mm } { 1297 mm }
-\@@_addpapersize:nnn {  c1 } {  648 mm } {  917 mm }
-\@@_addpapersize:nnn {  c2 } {  458 mm } {  648 mm }
-\@@_addpapersize:nnn {  c3 } {  324 mm } {  458 mm }
-\@@_addpapersize:nnn {  c4 } {  229 mm } {  324 mm }
-\@@_addpapersize:nnn {  c5 } {  162 mm } {  229 mm }
-\@@_addpapersize:nnn {  c6 } {  114 mm } {  162 mm }
+\@@_addpapersize:nnn { a0  } {  841 mm } { 1189 mm }
+\@@_addpapersize:nnn { a1  } {  594 mm } {  841 mm }
+\@@_addpapersize:nnn { a2  } {  420 mm } {  594 mm }
+\@@_addpapersize:nnn { a3  } {  297 mm } {  420 mm }
+\@@_addpapersize:nnn { a4  } {  210 mm } {  297 mm }
+\@@_addpapersize:nnn { a5  } {  148 mm } {  210 mm }
+\@@_addpapersize:nnn { a6  } {  105 mm } {  148 mm }
+\@@_addpapersize:nnn { b0  } { 1000 mm } { 1414 mm }
+\@@_addpapersize:nnn { b1  } {  707 mm } { 1000 mm }
+\@@_addpapersize:nnn { b2  } {  500 mm } {  707 mm }
+\@@_addpapersize:nnn { b3  } {  353 mm } {  500 mm }
+\@@_addpapersize:nnn { b4  } {  250 mm } {  353 mm }
+\@@_addpapersize:nnn { b5  } {  176 mm } {  250 mm }
+\@@_addpapersize:nnn { b6  } {  125 mm } {  176 mm }
+\@@_addpapersize:nnn { c0  } {  917 mm } { 1297 mm }
+\@@_addpapersize:nnn { c1  } {  648 mm } {  917 mm }
+\@@_addpapersize:nnn { c2  } {  458 mm } {  648 mm }
+\@@_addpapersize:nnn { c3  } {  324 mm } {  458 mm }
+\@@_addpapersize:nnn { c4  } {  229 mm } {  324 mm }
+\@@_addpapersize:nnn { c5  } {  162 mm } {  229 mm }
+\@@_addpapersize:nnn { c6  } {  114 mm } {  162 mm }
 \@@_addpapersize:nnn { b0j } { 1030 mm } { 1456 mm }
 \@@_addpapersize:nnn { b1j } {  728 mm } { 1030 mm }
 \@@_addpapersize:nnn { b2j } {  515 mm } {  728 mm }
@@ -318,7 +424,81 @@ NianCLS, 年文檔類
 \@@_aftercls_addtodel:N \g_@@_papersizeconf_clist
 \@@_aftercls_addtodel:N \g_@@_paperwidth_dim
 \@@_aftercls_addtodel:N \g_@@_paperheight_dim
+\@@_aftercls_addtodel:N \g_@@_paper_portrait_bool
 \@@_aftercls_addtodel:N \l_@@_paperwidthaux_tl
 \@@_aftercls_addtodel:N \l_@@_paperheightaux_tl
+%    \end{macrocode}
+% \subsection{字體矩陣配置}
+% \subsubsection{全局宏申明}
+% 全局逗号列表申明。
+%    \begin{macrocode}
+\clist_new:N \g_@@_jfm_feats_clist
+%    \end{macrocode}
+% \subsubsection{主要}
+% 其定义及作用域分散于后二节中。此章仅为占位。初始化其为。
+%    \begin{macrocode}
+\clist_gset:Nn \g_@@_jfm_feats_clist { nstd }
+%    \end{macrocode}
+% \subsubsection{內存管理}
+% 于最后清除之。
+%    \begin{macrocode}
+\@@_aftercls_addtodel:N \g_@@_jfm_feats_clist
+%    \end{macrocode}
+% \subsection{組版方向配置}
+% \subsubsection{鉤子及定義}
+% 支持纵排组版，使用钩子进行处理。
+%    \begin{macrocode}
+\bool_if:NT \g_@@_dir_tate_bool
+  {
+    \RequirePackage { lltjext } \tate
+    \@@_doc_beg:n
+      {
+        \message {《縦組モード》} \adjustbaseline
+      }
+  }
+%    \end{macrocode}
+% \subsubsection{字體矩陣配置}
+% 同时配置对应的字体矩阵特性。（其逗号列表的宏定义将在「字体矩阵配置・内存管理」中被定义与清除。）
+%    \begin{macrocode}
+\bool_if:NT \g_@@_dir_tate_bool
+  { \clist_gput_left:Nn \g_@@_jfm_feats_clist { vert } }
+%    \end{macrocode}
+% \subsubsection{內存管理}
+% 清除存储对方向之判断的宏。
+%    \begin{macrocode}
+\@@_aftercls_addtodel \g_@@_dir_tate_bool
+%    \end{macrocode}
+% \subsection{字體相關配置}
+% \subsubsection{全局宏申明}
+% 申明OpenType字体特性的字列表。
+%    \begin{macrocode}
+\tl_new:N \g_@@_font_langfeat_tl
+%    \end{macrocode}
+% \subsubsection{主要設定}
+% 对各语言分别设置字体矩阵特性及OpenType字体特性。
+%    \begin{macrocode}
+\bool_if:NT \g_@@_lang_trad_bool
+  {
+    \clist_gput_left:Nn \g_@@_jfm_feats_clist { trad }
+    \tl_gset:Nn \g_@@_font_langfeat_tl { Chinese~Traditional }
+  }
+\bool_if:NT \g_@@_lang_smpl_bool
+  {
+    \clist_gput_left:Nn \g_@@_jfm_feats_clist { smpl }
+    \tl_gset:Nn \g_@@_font_langfeat_tl { Chinese~Simplified }
+  }
+\bool_if:NT \g_@@_lang_jp_bool
+  {
+    \clist_gput_left:Nn \g_@@_jfm_feats_clist { jp }
+    \tl_gset:Nn \g_@@_font_langfeat_tl { Japanese }
+  }
+%    \end{macrocode}
+% \subsubsection{清理內存}
+% 内存管理。清除不必要的宏定义。
+%    \begin{macrocode}
+\@@_aftercls_addtodel:N \g_@@_font_magscale_tl
+\@@_aftercls_addtodel:N \g_@@_lang_trad_bool
+\@@_aftercls_addtodel:N \g_@@_lang_smpl_bool
+\@@_aftercls_addtodel:N \g_@@_lang_jp_bool
 %    \end{macrocode}
 \endinput

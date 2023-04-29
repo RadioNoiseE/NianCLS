@@ -162,6 +162,33 @@
     language .value_required:n = true,
     language .initial:n = { jp }
   }
+\tl_new:N \g__ncls_font_mincho_tl
+\tl_new:N \g__ncls_font_gothic_tl
+\keys_define:nn { ncls }
+  {
+    mincho .tl_gset:N = \g__ncls_font_mincho_tl,
+    gothic .tl_gset:N = \g__ncls_font_gothic_tl,
+    mincho .value_required:n = true,
+    gothic .value_required:n = true,
+    mincho .initial:n = { HaranoAji Mincho },
+    gothic .initial:n = { HaranoAji Gothic }
+  }
+\tl_new:N \g__ncls_font_cjscale_tl
+\keys_define:nn { ncls }
+  {
+    scale .tl_gset:N = \g__ncls_font_cjsacle_tl,
+    scale .value_required:n = true,
+    scale .initial:n = { 0.924715 }
+  }
+\bool_new:N \g__ncls_jfm_hanging_bool
+\bool_new:N \g__ncls_jfm_linegap_bool
+\keys_define:nn { ncls }
+  {
+    punct .multichoice:,
+    punct / hanging .code:n = { \bool_gset_true:N \g__ncls_jfm_hanging_bool },
+    punct / linegap .code:n = { \bool_gset_true:N \g__ncls_jfm_linegap_bool },
+    punct .value_required:n = true
+  }
 \__ncls_keyoptions_process:n { ncls }
 \prop_new:N \g__ncls_papersizelist_prop
 \clist_new:N \g__ncls_papersizeconf_clist
@@ -271,7 +298,20 @@
     \clist_gput_left:Nn \g__ncls_jfm_feats_clist { jp }
     \tl_gset:Nn \g__ncls_font_langfeat_tl { Japanese }
   }
+\bool_if:NT \g__ncls_jfm_hanging_bool
+  { \clist_gput_left:Nn \g__ncls_jfm_feats_clist { hgp } }
+\bool_if:NT \g__ncls_jfm_linegap_bool
+  { \clist_gput_left:Nn \g__ncls_jfm_feats_clist { lgp } }
+\tl_gset:Nx \Cjascale { \tl_use:N \g__ncls_font_cjscale_tl }
+\tl_gset:Nx \ltj@stdmcfont { \tl_use:N \g__ncls_font_mincho_tl }
+\tl_gset:Nx \ltj@stdgtfont { \tl_use:N \g__ncls_font_gothic_tl }
 \__ncls_aftercls_addtodel:N \g__ncls_font_magscale_tl
 \__ncls_aftercls_addtodel:N \g__ncls_lang_trad_bool
 \__ncls_aftercls_addtodel:N \g__ncls_lang_smpl_bool
 \__ncls_aftercls_addtodel:N \g__ncls_lang_jp_bool
+\__ncls_aftercls_addtodel:N \g__ncls_font_langfeat_tl
+\__ncls_aftercls_addtodel:N \g__ncls_font_mincho_tl
+\__ncls_aftercls_addtodel:N \g__ncls_font_gothic_tl
+\__ncls_aftercls_addtodel:N \g__ncls_font_cjscale_tl
+\__ncls_aftercls_addtodel:N \g__ncls_jfm_hanging_tl
+\__ncls_aftercls_addtodel:N \g__ncls_jfm_linegap_tl

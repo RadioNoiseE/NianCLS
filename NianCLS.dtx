@@ -306,6 +306,45 @@ NianCLS, 年文檔類
     language .initial:n = { jp }
   }
 %    \end{macrocode}
+% \subsubsection{字體設定}
+% 设定全局明朝及哥特字体。
+%    \begin{macrocode}
+\tl_new:N \g_@@_font_mincho_tl
+\tl_new:N \g_@@_font_gothic_tl
+\keys_define:nn { ncls }
+  {
+    mincho .tl_gset:N = \g_@@_font_mincho_tl,
+    gothic .tl_gset:N = \g_@@_font_gothic_tl,
+    mincho .value_required:n = true,
+    gothic .value_required:n = true,
+    mincho .initial:n = { HaranoAji Mincho },
+    gothic .initial:n = { HaranoAji Gothic }
+  }
+%    \end{macrocode}
+% \subsubsection{字體縮放率設定}
+% 设置全局中日字符缩放率的值。
+%    \begin{macrocode}
+\tl_new:N \g_@@_font_cjscale_tl
+\keys_define:nn { ncls }
+  {
+    scale .tl_gset:N = \g_@@_font_cjsacle_tl,
+    scale .value_required:n = true,
+    scale .initial:n = { 0.924715 }
+  }
+%    \end{macrocode}
+% \subsubsection{字體矩陣高級設定}
+% 设置全局标点特性。
+%    \begin{macrocode}
+\bool_new:N \g_@@_jfm_hanging_bool
+\bool_new:N \g_@@_jfm_linegap_bool
+\keys_define:nn { ncls }
+  {
+    punct .multichoice:,
+    punct / hanging .code:n = { \bool_gset_true:N \g_@@_jfm_hanging_bool },
+    punct / linegap .code:n = { \bool_gset_true:N \g_@@_jfm_linegap_bool },
+    punct .value_required:n = true
+  }
+%    \end{macrocode}
 % \subsection{初始化處理}
 % 使用封裝的宏處理用戶設置。
 %    \begin{macrocode}
@@ -435,7 +474,7 @@ NianCLS, 年文檔類
 \clist_new:N \g_@@_jfm_feats_clist
 %    \end{macrocode}
 % \subsubsection{主要}
-% 其定义及作用域分散于后二节中。此章仅为占位。初始化其为。
+% 其定义及作用域分散于后二节中，此章仅为占位。初始化其。
 %    \begin{macrocode}
 \clist_gset:Nn \g_@@_jfm_feats_clist { nstd }
 %    \end{macrocode}
@@ -493,6 +532,21 @@ NianCLS, 年文檔類
     \tl_gset:Nn \g_@@_font_langfeat_tl { Japanese }
   }
 %    \end{macrocode}
+% \subsubsection{字體矩陣高級設置}
+% 设置字体矩阵的标点高级特性。
+%    \begin{macrocode}
+\bool_if:NT \g_@@_jfm_hanging_bool
+  { \clist_gput_left:Nn \g_@@_jfm_feats_clist { hgp } }
+\bool_if:NT \g_@@_jfm_linegap_bool
+  { \clist_gput_left:Nn \g_@@_jfm_feats_clist { lgp } }
+%    \end{macrocode}
+% \subsubsection{載入中日文支持宏集}
+% 载入\textsf{\LuaTeX-ja}宏集。准备好预定义。
+%    \begin{macrocode}
+\tl_gset:Nx \Cjascale { \tl_use:N \g_@@_font_cjscale_tl }
+\tl_gset:Nx \ltj@stdmcfont { \tl_use:N \g_@@_font_mincho_tl }
+\tl_gset:Nx \ltj@stdgtfont { \tl_use:N \g_@@_font_gothic_tl }
+%    \end{macrocode}
 % \subsubsection{清理內存}
 % 内存管理。清除不必要的宏定义。
 %    \begin{macrocode}
@@ -500,5 +554,11 @@ NianCLS, 年文檔類
 \@@_aftercls_addtodel:N \g_@@_lang_trad_bool
 \@@_aftercls_addtodel:N \g_@@_lang_smpl_bool
 \@@_aftercls_addtodel:N \g_@@_lang_jp_bool
+\@@_aftercls_addtodel:N \g_@@_font_langfeat_tl
+\@@_aftercls_addtodel:N \g_@@_font_mincho_tl
+\@@_aftercls_addtodel:N \g_@@_font_gothic_tl
+\@@_aftercls_addtodel:N \g_@@_font_cjscale_tl
+\@@_aftercls_addtodel:N \g_@@_jfm_hanging_tl
+\@@_aftercls_addtodel:N \g_@@_jfm_linegap_tl
 %    \end{macrocode}
 \endinput

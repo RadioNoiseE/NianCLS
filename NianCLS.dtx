@@ -56,6 +56,7 @@ NianCLS, 年文檔類
 \setmainjfont{SourceHan Serif SC}[YokoFeatures={JFM={eva/{sc,nstd}}}]
 \setsansfont{Linux Biolinum O}
 \setmonofont{Iosevka Slab}[Scale=MatchLowercase, FakeStretch=1.138]
+%%\setmonofont{LetterGothicStdMedium.ttf}[Scale=MatchLowercase]
 %%\setmonofont{Fira Code}[Scale=MatchLowercase]
 \def\LuaTeX{Lua\kern-.2ex\TeX}
 \makeatletter
@@ -345,6 +346,19 @@ NianCLS, 年文檔類
     punct .value_required:n = true
   }
 %    \end{macrocode}
+% \subsubsection{視覺字號補正}
+% 判断是否对NFSS视觉字号进行补正。
+%    \begin{macrocode}
+\bool_new:N \g_@@_font_xreal_bool
+\keys_define:nn { ncls }
+  {
+    magstyle .choice:,
+    magstyle / real .code:n = { \bool_gset_false:N \g_@@_font_xreal_bool },
+    magstyle / xreal .code:n = { \bool_gset_true:N \g_@@_font_xreal_bool },
+    magstyle .value_required:n = true,
+    magstyle .initial:n = { xreal }
+  }
+%    \end{macrocode}
 % \subsection{初始化處理}
 % 使用封裝的宏處理用戶設置。
 %    \begin{macrocode}
@@ -497,10 +511,10 @@ NianCLS, 年文檔類
   }
 %    \end{macrocode}
 % \subsubsection{字體矩陣配置}
-% 同时配置对应的字体矩阵特性。（其逗号列表的宏定义将在「字体矩阵配置・内存管理」中被定义与清除。）
+% 「疑」同时配置对应的字体矩阵特性。（其逗号列表的宏定义将在「字体矩阵配置・内存管理」中被定义与清除。）
 %    \begin{macrocode}
-\bool_if:NT \g_@@_dir_tate_bool
-  { \clist_gput_left:Nn \g_@@_jfm_feats_clist { vert } }
+% \bool_if:NT \g_@@_dir_tate_bool
+%   { \clist_gput_left:Nn \g_@@_jfm_feats_clist { vert } }
 %    \end{macrocode}
 % \subsubsection{內存管理}
 % 清除存储对方向之判断的宏。
@@ -546,7 +560,108 @@ NianCLS, 年文檔類
 \tl_gset:Nx \Cjascale { \tl_use:N \g_@@_font_cjscale_tl }
 \tl_gset:Nx \ltj@stdmcfont { \tl_use:N \g_@@_font_mincho_tl }
 \tl_gset:Nx \ltj@stdgtfont { \tl_use:N \g_@@_font_gothic_tl }
+\tl_gset:Nx \ltj@stdyokojfm
+  { eva / { \clist_use:Nn \g_@@_jfm_feats_clist { , } } }
+\tl_gset:Nx \ltj@stdtatejfm
+  { eva / { \clist_use:Nn \g_@@_jfm_feats_clist { , } , vert } }
 %    \end{macrocode}
+% \subsubsection{補正用單位}
+% 设置补正用point单位，依据缩放率。
+%    \begin{macrocode}
+\dim_gset:Nn \mpt { \g_@@_font_magscale_tl \p@ }
+%    \end{macrocode}
+% 同时对\verb|\@ptsize|采取同bxjs及ltj文档类相同之策略。「馀」
+%    \begin{macrocode}
+\dim_compare:nNnT
+  { \mpt } < { 1 \p@ }
+  { \tl_gset:Nn \@ptsize { -20 } }
+\dim_compare:nNnT
+  { \mpt } = { 1\p@ }
+  { \tl_gset:Nn \@ptsize { 0 } }
+\dim_compare:nNnT
+  { \mpt } = { 1.095 \p@ }
+  { \tl_gset:Nn \@ptsize { 1 } }
+\dim_compare:nNnT
+  { \mpt } = { 1.200 \p@ }
+  { \tl_gset:Nn \@ptsize { 2 } }
+\dim_compare:nNnT
+  { \mpt } > { 1.200 \p@ }
+  { \tl_gset:Nn \@ptsize { -20 } }
+%    \end{macrocode}
+% \subsubsection{視覺字號補正}
+% 对是否补正时统一单位\verb|\mpt|进行处理，而当字号本就无需\verb|\mag|时使补正失效。
+%    \begin{macrocode}
+\bool_if:NTF \g_@@_font_xreal_bool
+  {
+    \dim_compare:nNnT
+      { \mpt } = { \p@ }
+      { \bool_gset_false:N \g_@@_font_xreal_bool }
+  }
+  { \dim_gset:Nn \mpt { \p@ } }
+%    \end{macrocode}
+% 实际补正。注意编码等，以及\textsf{expl3}与{\LaTeXe}的兼容性（需小心维护）。
+%    \begin{macrocode}
+\bool_if:NT \g_@@_font_xreal_bool
+  {
+    \exp_after:wN \cs_set_eq:NN \cs:w TU/lmr/m/n/10 \cs_end: \scan_stop:
+    \exp_after:wN \cs_set_eq:NN \cs:w TU/lmss/m/n/10 \cs_end: \scan_stop:
+    \exp_after:wN \cs_set_eq:NN \cs:w TU/lmtt/m/n/10 \cs_end: \scan_stop:
+    \@@_luafunc_new:N \@@_magnify_font_calc
+    \group_begin:
+      % \char_set_catcode_other:N \$
+      \char_set_catcode_other:N \%
+      \char_set_catcode_space:n { 32 }
+      \lua_now:e
+        {
+          local mpt = tex.getdimen('mpt')/65536
+          lua.get_functions_table()[\the\@@_magnify_font_calc] = function()
+            tex.sprint(-2, math.floor(0.5 + mpt * tex.getdimen(luatexbase.registernumber 'dimen@')))
+          end
+          function luatexja.ncls_unmagnify_fsize(e)
+            local s = luatexja.print_scaled(floor(0.5 + e / mpt * 65536))
+            tex.sprint(-2, (s:match('%.0\$')) and s:sub(1, -3) or s)
+          end
+        }
+      \group_end:
+      \cs_new:Npn \@@_magnify_external_font:w #1~at #2~at #3 \@nil
+        {
+          \tl_set:Nn \l_tempa_tl { #1 }
+          \tl_set:Nn \l_tempb_tl { #2 }
+          \tl_if_empty:NTF \l_tempb_tl
+            {
+              \tl_set:Nx \l_temlb_tl
+                {
+                  scaled \lua_now:e { tex.sprint(-2, math.floor(0.5 + \g_@@_font_magscale_tl * 1000)) }
+                }
+            }
+            {
+              \dim_set:Nn \dimen@ { \l_tempb_tl }
+              \tl_set:Nx \l_tempb_tl
+                { at \@@_luafunc_use:N \@@_magnify_font_calc~sp }
+            }
+          \tl_set:Nx \l_tempa_tl
+            {
+              \tl_set:Nn \exp_not:N \external@font
+                { \l_tempa_tl \l_tempb_tl }
+            }
+        }
+      \cs_new_eq:NN \@@_get_externalfont_orig: { \get@external@font }
+      \cs_gset:Nn \get@external@font
+        {
+          \tl_gset:Nx \f@size
+            { \lua_now:e { luatexja.ncls_unmagnify_fsize(\f@size) } }
+          \@@_get_externalfont_orig:
+          \group_begin:
+            \tl_set:Nx \l_tempa_tl
+              { \external@font \c_space_tl~at \c_space_tl~at }
+            \exp_after:wN \@@_magnify_external_font:w \l_tempa_tl \@nil
+            \exp_after:wN
+          \group_end:
+          \tl_use:N \l_tempa_tl
+        }
+  }
+%    \end{macrocode}
+% NFSS魔改结束，注意其内部宏的局部及全局命名空间。此部分不进行优化。
 % \subsubsection{清理內存}
 % 内存管理。清除不必要的宏定义。
 %    \begin{macrocode}
@@ -560,5 +675,6 @@ NianCLS, 年文檔類
 \@@_aftercls_addtodel:N \g_@@_font_cjscale_tl
 \@@_aftercls_addtodel:N \g_@@_jfm_hanging_tl
 \@@_aftercls_addtodel:N \g_@@_jfm_linegap_tl
+\@@_aftercls_addtodel:N \g_@@_font_xreal_bool
 %    \end{macrocode}
 \endinput

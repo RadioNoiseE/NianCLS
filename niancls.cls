@@ -189,6 +189,15 @@
     punct / linegap .code:n = { \bool_gset_true:N \g__ncls_jfm_linegap_bool },
     punct .value_required:n = true
   }
+\bool_new:N \g__ncls_font_xreal_bool
+\keys_define:nn { ncls }
+  {
+    magstyle .choice:,
+    magstyle / real .code:n = { \bool_gset_false:N \g__ncls_font_xreal_bool },
+    magstyle / xreal .code:n = { \bool_gset_true:N \g__ncls_font_xreal_bool },
+    magstyle .value_required:n = true,
+    magstyle .initial:n = { xreal }
+  }
 \__ncls_keyoptions_process:n { ncls }
 \prop_new:N \g__ncls_papersizelist_prop
 \clist_new:N \g__ncls_papersizeconf_clist
@@ -279,8 +288,6 @@
         \message {《縦組モード》} \adjustbaseline
       }
   }
-\bool_if:NT \g__ncls_dir_tate_bool
-  { \clist_gput_left:Nn \g__ncls_jfm_feats_clist { vert } }
 \__ncls_aftercls_addtodel \g__ncls_dir_tate_bool
 \tl_new:N \g__ncls_font_langfeat_tl
 \bool_if:NT \g__ncls_lang_trad_bool
@@ -305,6 +312,92 @@
 \tl_gset:Nx \Cjascale { \tl_use:N \g__ncls_font_cjscale_tl }
 \tl_gset:Nx \ltj@stdmcfont { \tl_use:N \g__ncls_font_mincho_tl }
 \tl_gset:Nx \ltj@stdgtfont { \tl_use:N \g__ncls_font_gothic_tl }
+\tl_gset:Nx \ltj@stdyokojfm
+  { eva / { \clist_use:Nn \g__ncls_jfm_feats_clist { , } } }
+\tl_gset:Nx \ltj@stdtatejfm
+  { eva / { \clist_use:Nn \g__ncls_jfm_feats_clist { , } , vert } }
+\dim_gset:Nn \mpt { \g__ncls_font_magscale_tl \p@ }
+\dim_compare:nNnT
+  { \mpt } < { 1 \p@ }
+  { \tl_gset:Nn \@ptsize { -20 } }
+\dim_compare:nNnT
+  { \mpt } = { 1\p@ }
+  { \tl_gset:Nn \@ptsize { 0 } }
+\dim_compare:nNnT
+  { \mpt } = { 1.095 \p@ }
+  { \tl_gset:Nn \@ptsize { 1 } }
+\dim_compare:nNnT
+  { \mpt } = { 1.200 \p@ }
+  { \tl_gset:Nn \@ptsize { 2 } }
+\dim_compare:nNnT
+  { \mpt } > { 1.200 \p@ }
+  { \tl_gset:Nn \@ptsize { -20 } }
+\bool_if:NTF \g__ncls_font_xreal_bool
+  {
+    \dim_compare:nNnT
+      { \mpt } = { \p@ }
+      { \bool_gset_false:N \g__ncls_font_xreal_bool }
+  }
+  { \dim_gset:Nn \mpt { \p@ } }
+\bool_if:NT \g__ncls_font_xreal_bool
+  {
+    \exp_after:wN \cs_set_eq:NN \cs:w TU/lmr/m/n/10 \cs_end: \scan_stop:
+    \exp_after:wN \cs_set_eq:NN \cs:w TU/lmss/m/n/10 \cs_end: \scan_stop:
+    \exp_after:wN \cs_set_eq:NN \cs:w TU/lmtt/m/n/10 \cs_end: \scan_stop:
+    \__ncls_luafunc_new:N \__ncls_magnify_font_calc
+    \group_begin:
+      % \char_set_catcode_other:N \$
+      \char_set_catcode_other:N \%
+      \char_set_catcode_space:n { 32 }
+      \lua_now:e
+        {
+          local mpt = tex.getdimen('mpt')/65536
+          lua.get_functions_table()[\the\__ncls_magnify_font_calc] = function()
+            tex.sprint(-2, math.floor(0.5 + mpt * tex.getdimen(luatexbase.registernumber 'dimen@')))
+          end
+          function luatexja.ncls_unmagnify_fsize(e)
+            local s = luatexja.print_scaled(floor(0.5 + e / mpt * 65536))
+            tex.sprint(-2, (s:match('%.0\$)) and s:sub(1, -3) or s)
+          end
+        }
+      \group_end:
+      \cs_new:Npn \__ncls_magnify_external_font:w #1~at #2~at #3 \@nil
+        {
+          \tl_set:Nn \l_tempa_tl { #1 }
+          \tl_set:Nn \l_tempb_tl { #2 }
+          \tl_if_empty:NTF \l_tempb_tl
+            {
+              \tl_set:Nx \l_temlb_tl
+                {
+                  scaled \lua_now:e { tex.sprint(-2, math.floor(0.5 + \g__ncls_font_magscale_tl * 1000)) }
+                }
+            }
+            {
+              \dim_set:Nn \dimen@ { \l_tempb_tl }
+              \tl_set:Nx \l_tempb_tl
+                { at \__ncls_luafunc_use:N \__ncls_magnify_font_calc~sp }
+            }
+          \tl_set:Nx \l_tempa_tl
+            {
+              \tl_set:Nn \exp_not:N \external@font
+                { \l_tempa_tl \l_tempb_tl }
+            }
+        }
+      \cs_new_eq:NN \__ncls_get_externalfont_orig: { \get@external@font }
+      \cs_gset:Nn \get@external@font
+        {
+          \tl_gset:Nx \f@size
+            { \lua_now:e { luatexja.ncls_unmagnify_fsize(\f@size) } }
+          \__ncls_get_externalfont_orig:
+          \group_begin:
+            \tl_set:Nx \l_tempa_tl
+              { \external@font \c_space_tl~at \c_space_tl~at }
+            \exp_after:wN \__ncls_magnify_external_font:w \l_tempa_tl \@nil
+            \exp_after:wN
+          \group_end:
+          \tl_use:N \l_tempa_tl
+        }
+  }
 \__ncls_aftercls_addtodel:N \g__ncls_font_magscale_tl
 \__ncls_aftercls_addtodel:N \g__ncls_lang_trad_bool
 \__ncls_aftercls_addtodel:N \g__ncls_lang_smpl_bool
@@ -315,3 +408,4 @@
 \__ncls_aftercls_addtodel:N \g__ncls_font_cjscale_tl
 \__ncls_aftercls_addtodel:N \g__ncls_jfm_hanging_tl
 \__ncls_aftercls_addtodel:N \g__ncls_jfm_linegap_tl
+\__ncls_aftercls_addtodel:N \g__ncls_font_xreal_bool

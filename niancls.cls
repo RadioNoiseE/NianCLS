@@ -45,7 +45,7 @@
     \msg_fatel:nn { ncls } { unsupported-engine }
   }
 \cs_new_protected:Npn \__ncls_preamble_end:n { \AtEndPreamble }
-\cs_new_protected:Npn \:n { \AtBeginDocument }
+\cs_new_protected:Npn \__ncls_doc_beg:n { \AtBeginDocument }
 \seq_new:N \g__ncls_aftercls_del_seq
 \cs_set:Nn \__ncls_aftercls_addtodel:N
   { \seq_gput_right:Nn \g__ncls_aftercls_del_seq { #1 } }
@@ -69,10 +69,10 @@
 \__ncls_aftercls_addtodel:N \__ncls_aftercls_addtodel:N
 \__ncls_aftercls_addtodel:N \__ncls_luafunc_new:N
 \__ncls_aftercls_addtodel:N \__ncls_luafunc_use:N
-\tl_new:N \g__ncls_papersizeinfo_tl
+\tl_new:N \g__ncls_paper_sizeinfo_tl
 \keys_define:nn { ncls }
   {
-    paper .tl_gset:N = \g__ncls_papersizeinfo_tl,
+    paper .tl_gset:N = \g__ncls_paper_sizeinfo_tl,
     paper .value_required:n = true,
     peper .initial:n = { a4 }
   }
@@ -98,7 +98,7 @@
     direction .choice:,
     direction / yoko .code:n = { \bool_gset_false:N \g__ncls_dir_tate_bool },
     direction / tate .code:n = { \bool_gset_true:N \g__ncls_dir_tate_bool },
-    direction / unknown .code =
+    direction / unknown .code:n =
       {
         \msg_new:nnxxx { ncls } { unknown-choice }
           { direction }
@@ -143,15 +143,13 @@
     fontsize .value_required:n = true,
     fontsize .initial:n = { 10pt }
   }
-\bool_new:N \g__ncls_lang_trad_bool
-\bool_new:N \g__ncls_lang_smpl_bool
-\bool_new:N \g__ncls_lang_jp_bool
+\str_new:N \g__ncls_lang_cj_str
 \keys_define:nn { ncls }
   {
     language .choice:,
-    language / trad .code:n = { \bool_gset_true:N \g__ncls_lang_trad_bool },
-    language / smpl .code:n = { \bool_gset_true:N \g__ncls_lang_smpl_bool },
-    language / jp .code:n = { \bool_gset_true:N \g__ncls_lang_jp_bool },
+    language / trad .code:n = { \str_gset:Nn \g__ncls_lang_cj_str { t } },
+    language / smpl .code:n = { \str_gset:Nn \g__ncls_lang_cj_str { s } },
+    language / jp .code:n = { \str_gset:Nn \g__ncls_lang_cj_str { j } },
     language / unknown .code:n =
       {
         \msg_error:nnxxx { ncls } { unknown-choice }
@@ -198,85 +196,96 @@
     magstyle .value_required:n = true,
     magstyle .initial:n = { xreal }
   }
-\__ncls_keyoptions_process:n { ncls }
-\prop_new:N \g__ncls_papersizelist_prop
-\clist_new:N \g__ncls_papersizeconf_clist
-\dim_new:N \g__ncls_paperwidth_dim
-\dim_new:N \g__ncls_paperheight_dim
-\tl_new:N \l__ncls_paperwidthaux_tl
-\tl_new:N \l__ncls_paperheightaux_tl
-\cs_new:Nn \__ncls_addpapersize:nnn
+\bool_new:N \g__ncls_font_fallback_bool
+\tl_new:N \g__ncls_font_fallback_tl
+\keys_define:nn { ncls }
   {
-    \prop_put_if_new:Nnn \g__ncls_papersizelist_prop
+    fallback .code:n =
+      {
+        \bool_gset_true:N \g__ncls_font_fallback_bool
+        \tl_gset:Nn \g__ncls_font_fallback_tl { #1 }
+      }
+    fallback .value_required:N = true
+  }
+\__ncls_keyoptions_process:n { ncls }
+\prop_new:N \g__ncls_paper_sizelist_prop
+\clist_new:N \g__ncls_paper_sizeconf_clist
+\dim_new:N \g__ncls_paper_width_dim
+\dim_new:N \g__ncls_paper_height_dim
+\tl_new:N \l__ncls_paper_widthaux_tl
+\tl_new:N \l__ncls_paper_heightaux_tl
+\cs_new:Nn \__ncls_paper_addsize:nnn
+  {
+    \prop_put_if_new:Nnn \g__ncls_paper_sizelist_prop
       { #1 }
       { { #2 }, { #3 } }
   }
-\prop_if_in:NoT \g__ncls_papersizelist_prop
-  { \tl_to_str:N \g__ncls_papersizeinfo_tl }
+\__ncls_paper_addsize:nnn { a0  } {  841 mm } { 1189 mm }
+\__ncls_paper_addsize:nnn { a1  } {  594 mm } {  841 mm }
+\__ncls_paper_addsize:nnn { a2  } {  420 mm } {  594 mm }
+\__ncls_paper_addsize:nnn { a3  } {  297 mm } {  420 mm }
+\__ncls_paper_addsize:nnn { a4  } {  210 mm } {  297 mm }
+\__ncls_paper_addsize:nnn { a5  } {  148 mm } {  210 mm }
+\__ncls_paper_addsize:nnn { a6  } {  105 mm } {  148 mm }
+\__ncls_paper_addsize:nnn { b0  } { 1000 mm } { 1414 mm }
+\__ncls_paper_addsize:nnn { b1  } {  707 mm } { 1000 mm }
+\__ncls_paper_addsize:nnn { b2  } {  500 mm } {  707 mm }
+\__ncls_paper_addsize:nnn { b3  } {  353 mm } {  500 mm }
+\__ncls_paper_addsize:nnn { b4  } {  250 mm } {  353 mm }
+\__ncls_paper_addsize:nnn { b5  } {  176 mm } {  250 mm }
+\__ncls_paper_addsize:nnn { b6  } {  125 mm } {  176 mm }
+\__ncls_paper_addsize:nnn { c0  } {  917 mm } { 1297 mm }
+\__ncls_paper_addsize:nnn { c1  } {  648 mm } {  917 mm }
+\__ncls_paper_addsize:nnn { c2  } {  458 mm } {  648 mm }
+\__ncls_paper_addsize:nnn { c3  } {  324 mm } {  458 mm }
+\__ncls_paper_addsize:nnn { c4  } {  229 mm } {  324 mm }
+\__ncls_paper_addsize:nnn { c5  } {  162 mm } {  229 mm }
+\__ncls_paper_addsize:nnn { c6  } {  114 mm } {  162 mm }
+\__ncls_paper_addsize:nnn { b0j } { 1030 mm } { 1456 mm }
+\__ncls_paper_addsize:nnn { b1j } {  728 mm } { 1030 mm }
+\__ncls_paper_addsize:nnn { b2j } {  515 mm } {  728 mm }
+\__ncls_paper_addsize:nnn { b3j } {  364 mm } {  515 mm }
+\__ncls_paper_addsize:nnn { b4j } {  257 mm } {  364 mm }
+\__ncls_paper_addsize:nnn { b5j } {  182 mm } {  257 mm }
+\__ncls_paper_addsize:nnn { b6j } {  128 mm } {  182 mm }
+\__ncls_paper_addsize:nnn { screen } { 225 mm } { 180 mm }
+\prop_if_in:NoT \g__ncls_paper_sizelist_prop
+  { \tl_to_str:N \g__ncls_paper_sizeinfo_tl }
   {
-    \prop_get:NoN \g__ncls_papersizelist_prop
-      { \tl_to_str:N \g__ncls_papersizeinfo_tl }
-      \g__ncls_papersizeinfo_tl
+    \prop_get:NoN \g__ncls_paper_sizelist_prop
+      { \tl_to_str:N \g__ncls_paper_sizeinfo_tl }
+      \g__ncls_paper_sizeinfo_tl
   }
-\clist_gset:Nx \g__ncls_papersizeconf_clist
-  { \g__ncls_papersizeinfo_tl }
-\clist_gpop \g__ncls_papersizeconf_clist \l__ncls_paperwidthaux_tl
-\clist_gpop \g__ncls_papersizeconf_clist \l__ncls_paperheightaux_tl
+\clist_gset:Nx \g__ncls_paper_sizeconf_clist
+  { \g__ncls_paper_sizeinfo_tl }
+\clist_gpop:NN \g__ncls_paper_sizeconf_clist \l__ncls_paper_widthaux_tl
+\clist_gpop:NN \g__ncls_paper_sizeconf_clist \l__ncls_paper_heightaux_tl
 \bool_if:NTF \g__ncls_paper_portrait_bool
   {
-    \dim_gset:Nn \g__ncls_paperwidth_dim
-      { \tl_use:N \l__ncls_paperwidthaux_tl }
-    \dim_gset:Nn \g__ncls_paperheight_dim
-      { \tl_use:N \l__ncls_paperheightaux_tl }
+    \dim_gset:Nn \g__ncls_paper_width_dim
+      { \tl_use:N \l__ncls_paper_widthaux_tl }
+    \dim_gset:Nn \g__ncls_paper_height_dim
+      { \tl_use:N \l__ncls_paper_heightaux_tl }
   }
   {
-    \dim_gset:Nn \g__ncls_paperwidth_dim
-      { \tl_use:N \l__ncls_paperheightaux_tl }
-    \dim_gset:Nn \g__ncls_paperheight_dim
-      { \tl_use:N \l__ncls_paperwidthaux_tl }
+    \dim_gset:Nn \g__ncls_paper_width_dim
+      { \tl_use:N \l__ncls_paper_heightaux_tl }
+    \dim_gset:Nn \g__ncls_paper_height_dim
+      { \tl_use:N \l__ncls_paper_widthaux_tl }
   }
 \pdf_pagesize_gset:nn
-  { \dim_use:N \g__ncls_paperwidth_dim }
-  { \dim_use:N \g__ncls_paperheight_dim }
-\__ncls_addpapersize:nnn { a0  } {  841 mm } { 1189 mm }
-\__ncls_addpapersize:nnn { a1  } {  594 mm } {  841 mm }
-\__ncls_addpapersize:nnn { a2  } {  420 mm } {  594 mm }
-\__ncls_addpapersize:nnn { a3  } {  297 mm } {  420 mm }
-\__ncls_addpapersize:nnn { a4  } {  210 mm } {  297 mm }
-\__ncls_addpapersize:nnn { a5  } {  148 mm } {  210 mm }
-\__ncls_addpapersize:nnn { a6  } {  105 mm } {  148 mm }
-\__ncls_addpapersize:nnn { b0  } { 1000 mm } { 1414 mm }
-\__ncls_addpapersize:nnn { b1  } {  707 mm } { 1000 mm }
-\__ncls_addpapersize:nnn { b2  } {  500 mm } {  707 mm }
-\__ncls_addpapersize:nnn { b3  } {  353 mm } {  500 mm }
-\__ncls_addpapersize:nnn { b4  } {  250 mm } {  353 mm }
-\__ncls_addpapersize:nnn { b5  } {  176 mm } {  250 mm }
-\__ncls_addpapersize:nnn { b6  } {  125 mm } {  176 mm }
-\__ncls_addpapersize:nnn { c0  } {  917 mm } { 1297 mm }
-\__ncls_addpapersize:nnn { c1  } {  648 mm } {  917 mm }
-\__ncls_addpapersize:nnn { c2  } {  458 mm } {  648 mm }
-\__ncls_addpapersize:nnn { c3  } {  324 mm } {  458 mm }
-\__ncls_addpapersize:nnn { c4  } {  229 mm } {  324 mm }
-\__ncls_addpapersize:nnn { c5  } {  162 mm } {  229 mm }
-\__ncls_addpapersize:nnn { c6  } {  114 mm } {  162 mm }
-\__ncls_addpapersize:nnn { b0j } { 1030 mm } { 1456 mm }
-\__ncls_addpapersize:nnn { b1j } {  728 mm } { 1030 mm }
-\__ncls_addpapersize:nnn { b2j } {  515 mm } {  728 mm }
-\__ncls_addpapersize:nnn { b3j } {  364 mm } {  515 mm }
-\__ncls_addpapersize:nnn { b4j } {  257 mm } {  364 mm }
-\__ncls_addpapersize:nnn { b5j } {  182 mm } {  257 mm }
-\__ncls_addpapersize:nnn { b6j } {  128 mm } {  182 mm }
-\__ncls_addpapersize:nnn { screen } { 225 mm } { 180 mm }
-\__ncls_aftercls_addtodel:N \__ncls_addpapersize:nnn
-\__ncls_aftercls_addtodel:N \g__ncls_papersizelist_prop
-\__ncls_aftercls_addtodel:N \g__ncls_papersizeinfo_tl
-\__ncls_aftercls_addtodel:N \g__ncls_papersizeaux_tl
-\__ncls_aftercls_addtodel:N \g__ncls_papersizeconf_clist
-\__ncls_aftercls_addtodel:N \g__ncls_paperwidth_dim
-\__ncls_aftercls_addtodel:N \g__ncls_paperheight_dim
+  { \dim_use:N \g__ncls_paper_width_dim }
+  { \dim_use:N \g__ncls_paper_height_dim }
+\__ncls_aftercls_addtodel:N \__ncls_paper_addsize:nnn
+\__ncls_aftercls_addtodel:N \g__ncls_paper_sizelist_prop
+\__ncls_aftercls_addtodel:N \g__ncls_paper_sizeinfo_tl
+\__ncls_aftercls_addtodel:N \g__ncls_paper_sizeaux_tl
+\__ncls_aftercls_addtodel:N \g__ncls_paper_sizeconf_clist
+\__ncls_aftercls_addtodel:N \g__ncls_paper_width_dim
+\__ncls_aftercls_addtodel:N \g__ncls_paper_height_dim
 \__ncls_aftercls_addtodel:N \g__ncls_paper_portrait_bool
-\__ncls_aftercls_addtodel:N \l__ncls_paperwidthaux_tl
-\__ncls_aftercls_addtodel:N \l__ncls_paperheightaux_tl
+\__ncls_aftercls_addtodel:N \l__ncls_paper_widthaux_tl
+\__ncls_aftercls_addtodel:N \l__ncls_paper_heightaux_tl
 \clist_new:N \g__ncls_jfm_feats_clist
 \clist_gset:Nn \g__ncls_jfm_feats_clist { nstd }
 \__ncls_aftercls_addtodel:N \g__ncls_jfm_feats_clist
@@ -290,17 +299,17 @@
   }
 \__ncls_aftercls_addtodel \g__ncls_dir_tate_bool
 \tl_new:N \g__ncls_font_langfeat_tl
-\bool_if:NT \g__ncls_lang_trad_bool
+\str_if_eq:VnT \g__ncls_lang_cj_str { t }
   {
     \clist_gput_left:Nn \g__ncls_jfm_feats_clist { trad }
     \tl_gset:Nn \g__ncls_font_langfeat_tl { Chinese~Traditional }
   }
-\bool_if:NT \g__ncls_lang_smpl_bool
+\str_if_eq:VnT \g__ncls_lang_cj_str { s }
   {
     \clist_gput_left:Nn \g__ncls_jfm_feats_clist { smpl }
     \tl_gset:Nn \g__ncls_font_langfeat_tl { Chinese~Simplified }
   }
-\bool_if:NT \g__ncls_lang_jp_bool
+\str_if_eq:VnT \g__ncls_lang_cj_str { j }
   {
     \clist_gput_left:Nn \g__ncls_jfm_feats_clist { jp }
     \tl_gset:Nn \g__ncls_font_langfeat_tl { Japanese }
@@ -316,6 +325,7 @@
   { eva / { \clist_use:Nn \g__ncls_jfm_feats_clist { , } } }
 \tl_gset:Nx \ltj@stdtatejfm
   { eva / { \clist_use:Nn \g__ncls_jfm_feats_clist { , } , vert } }
+\RequirePackage { luatexja }
 \dim_gset:Nn \mpt { \g__ncls_font_magscale_tl \p@ }
 \dim_compare:nNnT
   { \mpt } < { 1 \p@ }
@@ -357,7 +367,7 @@
           end
           function luatexja.ncls_unmagnify_fsize(e)
             local s = luatexja.print_scaled(floor(0.5 + e / mpt * 65536))
-            tex.sprint(-2, (s:match('%.0\$)) and s:sub(1, -3) or s)
+            tex.sprint(-2, (s:match('%.0\$')) and s:sub(1, -3) or s)
           end
         }
       \group_end:
@@ -367,20 +377,20 @@
           \tl_set:Nn \l_tempb_tl { #2 }
           \tl_if_empty:NTF \l_tempb_tl
             {
-              \tl_set:Nx \l_temlb_tl
+              \tl_set:Nx \l_tempb_tl
                 {
                   scaled \lua_now:e { tex.sprint(-2, math.floor(0.5 + \g__ncls_font_magscale_tl * 1000)) }
                 }
             }
             {
-              \dim_set:Nn \dimen@ { \l_tempb_tl }
+              \dim_set:Nn \dimen@ { \tl_use:N \l_tempb_tl }
               \tl_set:Nx \l_tempb_tl
                 { at \__ncls_luafunc_use:N \__ncls_magnify_font_calc~sp }
             }
           \tl_set:Nx \l_tempa_tl
             {
               \tl_set:Nn \exp_not:N \external@font
-                { \l_tempa_tl \l_tempb_tl }
+                { \tl_use:N \l_tempa_tl \tl_use:N \l_tempb_tl }
             }
         }
       \cs_new_eq:NN \__ncls_get_externalfont_orig: { \get@external@font }
@@ -391,17 +401,73 @@
           \__ncls_get_externalfont_orig:
           \group_begin:
             \tl_set:Nx \l_tempa_tl
-              { \external@font \c_space_tl~at \c_space_tl~at }
-            \exp_after:wN \__ncls_magnify_external_font:w \l_tempa_tl \@nil
+              { \external@font \tl_use:N \c_space_tl~at \tl_use:N \c_space_tl~at }
+            \exp_after:wN \__ncls_magnify_external_font:w \tl_use:N \l_tempa_tl \@nil
             \exp_after:wN
           \group_end:
           \tl_use:N \l_tempa_tl
         }
   }
+\bool_if:NT \g__ncls_font_fallback_bool
+  {
+    \group_begin:
+    \char_set_catcode_space:n { 32 }
+    \lua_now:e
+      {
+        luaotfload.add_fallback
+          (
+            " nclsfallback ",
+            { " \tl_use:N \g__ncls_font_fallback_tl : mode = node ; script = cjk ; language = \tl_use:N \g__ncls_font_langfeat_tl " }
+          )
+      }
+    \group_end:
+  }
+\exp_after:wN \cs_set_eq:NN \cs:w JY3/mc/m/n/10 \cs_end: \scan_stop:
+\exp_after:wN \cs_set_eq:NN \cs:w JY3/gt/m/n/10 \cs_end: \scan_stop:
+\exp_after:wN \cs_set_eq:NN \cs:w JT3/mc/m/n/10 \cs_end: \scan_stop:
+\exp_after:wN \cs_set_eq:NN \cs:w JT3/gt/m/n/10 \cs_end: \scan_stop:
+\cs_new:Nn \__ncls_font_declareshape:nnnn
+  {
+    \bool_if:NTF \g__ncls_font_fallback_bool
+      {
+        \DeclareFontShape { #1 } { #2 } { m } { n }
+          {
+            <-> s * [ \tl_use:N \g__ncls_font_cjsacale_tl ] #3 :
+            - kern ; script = cjk ; language = \tl_use:N \g__ncls_font_langfeat_tl ;
+            jfm = { eva / { \clist_use:Nn \g__ncls_jfm_feats_clist { , } #4 } } ;
+            fallback = nclsfallback
+          }
+      }
+      {
+        \DeclareFontShape { #1 } { #2 } { m } { n }
+          {
+            <-> s * [ \tl_use:N \g__ncls_font_cjsacale_tl ] #3 :
+            - kern ; script = cjk ; language = \tl_use:N \g__ncls_font_langfeat_tl ;
+            jfm = { eva / { \clist_use:Nn \g__ncls_jfm_feats_clist { , } #4 } }
+          }
+      }
+  }
+\__ncls_font_declareshape:nnnn { JY3 } { mc } { \tl_use:N \g__ncls_font_mincho_tl } { }
+\__ncls_font_declareshape:nnnn { JY3 } { gt } { \tl_use:N \g__ncls_font_gothic_tl } { }
+\__ncls_font_declareshape:nnnn { JT3 } { mc } { \tl_use:N \g__ncls_font_mincho_tl } { ,vert }
+\__ncls_font_declareshape:nnnn { JT3 } { gt } { \tl_use:N \g__ncls_font_gothic_tl } { ,vert }
+\clist_map_inline:nn { JY3, JT3 }
+  {
+    \clist_map_inline:nn { n, it, sl, sc }
+      {
+        \clist_map_inline:nn { m, b, bx, sb }
+          {
+            \bool_if:nF { \str_if_eq_p:nn { ##1 } { n } && \str_if_eq_p:nn { ####1 } { m } }
+              { \DeclareFontShape { #1 } { gt } { ####1 } { ##1 } { <-> ssub * gt/m/n } { } }
+          }
+        \str_if_eq:nn { ##1 } { n }
+          { \DeclareFontShape { #1 } { mc } { m } { ##1 } { <-> ssub * mc/m/n } { } }
+        \clist_map_inline:nn { b, bx, sb }
+          { \DeclareFontShape { #1 } { mc } { ####1 } { ##1 } { <-> ssub * gt/m/n } { }}
+      }
+  }
 \__ncls_aftercls_addtodel:N \g__ncls_font_magscale_tl
-\__ncls_aftercls_addtodel:N \g__ncls_lang_trad_bool
-\__ncls_aftercls_addtodel:N \g__ncls_lang_smpl_bool
-\__ncls_aftercls_addtodel:N \g__ncls_lang_jp_bool
+\__ncls_aftercls_addtodel:N \g__ncls_lang_cj_str
 \__ncls_aftercls_addtodel:N \g__ncls_font_langfeat_tl
 \__ncls_aftercls_addtodel:N \g__ncls_font_mincho_tl
 \__ncls_aftercls_addtodel:N \g__ncls_font_gothic_tl
@@ -409,3 +475,6 @@
 \__ncls_aftercls_addtodel:N \g__ncls_jfm_hanging_tl
 \__ncls_aftercls_addtodel:N \g__ncls_jfm_linegap_tl
 \__ncls_aftercls_addtodel:N \g__ncls_font_xreal_bool
+\__ncls_aftercls_addtodel:N \g__ncls_font_fallback_bool
+\__ncls_aftercls_addtodel:N \g__ncls_font_fallback_tl
+\__ncls_aftercls_addtodel:N \__ncls_font_declareshape:nnnn

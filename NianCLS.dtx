@@ -40,7 +40,8 @@ NianCLS, 年文檔類
 \def\ltj@stdmcfont{SourceHanSerifSC}
 \def\ltj@stdyokojfm{eva/{smpl,nstd}}
 \makeatother
-\documentclass{ltjsarticle}
+\documentclass[twoside]{ltjsarticle}
+\pagestyle{headings}
 %%\documentclass[full]{l3doc}
 \usepackage{doc}
 \EnableCrossrefs
@@ -56,6 +57,7 @@ NianCLS, 年文檔類
 \setmainfont{Linux Libertine O}
 \setmainjfont{SourceHan Serif SC}[YokoFeatures={JFM={eva/{smpl,nstd}}}]
 \setsansfont{Linux Biolinum O}
+%%\setmonofont{CMU Concrete}
 \setmonofont{Iosevka Slab}[Scale=0.694,FakeStretch=1.2]
 %%\setmonofont{LetterGothicStdMedium.ttf}[Scale=MatchLowercase]
 %%\setmonofont{Fira Code}[Scale=MatchLowercase]
@@ -149,11 +151,11 @@ NianCLS, 年文檔類
 %    \end{macrocode}
 % 「疑」定义\verb|\AtEndOfClass|钩子。
 %    \begin{macrocode}
-% \cs_new_protected:Npn \@@_at_doc_end:n { \AtEndOfClass }
+\cs_new_protected:Npn \@@_at_doc_end:n { \AtEndOfClass }
 %    \end{macrocode}
 % 定义\verb|\AtBeginDocument|钩子。
 %    \begin{macrocode}
-\cs_new_protected:Npn \@@_doc_beg:n { \AtBeginDocument }
+\cs_new_protected:Npn \@@_at_doc_beg:n { \AtBeginDocument }
 %    \end{macrocode}
 % 定义用于在读取结束后释放缓存的宏。
 %    \begin{macrocode}
@@ -191,7 +193,7 @@ NianCLS, 年文檔類
 %    \begin{macrocode}
 \@@_macro_release:N \@@_keyoptions_process:n
 \@@_macro_release:N \@@_at_preamble_end:n
-% \@@_macro_release:N \@@_at_doc_end:n
+\@@_macro_release:N \@@_at_doc_end:n
 \@@_macro_release:N \@@_at_doc_begin:n
 \@@_macro_release:N \@@_macro_release:N
 \@@_macro_release:N \@@_luafunc_new:N
@@ -486,6 +488,37 @@ NianCLS, 年文檔類
     bibstyle .initial:n = { plain }
   }
 %    \end{macrocode}
+% \subsubsection{依存係設定缺省給}
+% 最后设置所有依赖文档类型的选项参数。
+%    \begin{macrocode}
+\str_if_eq:VnT \l_@@_layout_doctype_str { a }
+  {
+    \keys_set { ncls }
+      {
+        print .initial:n = { oneside },
+        titlepage .initial:n = { false },
+        open .initial:n = { any }
+      }
+  }
+\str_if_eq:VnT \l_@@_layout_doctype_str { r }
+  {
+    \keys_set { ncls }
+      {
+        print .initial:n = { vartwoside },
+        titlepage .initial:n = { true },
+        open .initial:n = { any }
+      }
+  }
+\str_if_eq:VnT \l_@@_layout_doctype_str { b }
+  {
+    \keys_set { ncls }
+      {
+        print .initial:n = { twoside },
+        titlepage .initial:n = { true },
+        open .initial:n = { right }
+      }
+  }
+%    \end{macrocode}
 % \subsection{字體相關配置用}
 % \subsubsection{全局基準字體參數設定}
 % 处理用户所需的全局基准字体设置。
@@ -619,6 +652,9 @@ NianCLS, 年文檔類
 %    \begin{macrocode}
 \@@_keyoptions_process:n { ncls }
 %    \end{macrocode}
+% \subsection{衝突檢測}
+% \subsubsection{選項設置}
+% 当文档类型为article时，应忽略open选项。其馀延后。「待补完」
 % \section{主要特性}
 % \subsection{紙張尺寸配置}
 % \subsubsection{全局宏申明}
@@ -803,7 +839,7 @@ NianCLS, 年文檔類
 \bool_if:NT \l_@@_layout_tate_bool
   {
     \RequirePackage { lltjext } \tate
-    \@@_doc_beg:n
+    \@@_at_doc_beg:n
       {
         \iow_trem:n {《縦組モード》} \adjustbaseline
       }
@@ -813,6 +849,57 @@ NianCLS, 年文檔類
 %    \begin{macrocode}
 % \bool_if:NT \l_@@_layout_tate_bool
 %   { \clist_put_left:Nn \l_@@_jfm_feats_clist { vert } }
+%    \end{macrocode}
+% \subsubsection{單雙欄設定}
+% 设置{\LaTeXe}内核中的单双栏开关。
+%    \begin{macrocode}
+\bool_if:NTF \l_@@_layout_restonecol_bool
+  { \legacy_if_set_true:n { @twocolumn } }
+  { \legacy_if_set_false:n { @twocolumn } }
+%    \end{macrocode}
+% \subsubsection{單雙面設定}
+% 同样，也是直接设置内核开关即可。唯一不同的就是有两个需要设置：一个浮动标题、一个边距。
+%    \begin{macrocode}
+\bool_if:NTF \l_@@_layout_twoside_bool
+  { \legacy_if_set_true:n { @twoside } }
+  { \legacy_if_set_false:n { @twoside } }
+\bool_if:NTF \l_@@_layout_mparswitch
+  { \legacy_if_set_true:n { @mparswitch } }
+  { \legacy_if_set_false:n { @mparswitch } }
+%    \end{macrocode}
+% \subsubsection{標題頁設定}
+% 留空。待字体设置完成后再行设定。
+% \subsubsection{章節起設定}
+% 留空。理由跟上面写的「一摸，一样！」。
+% \subsubsection{編譯模式設定}
+% 已经设置好了，直接设置的{\TeX}的标尺长度。
+% \subsubsection{數學公式設定}
+% 仍旧是两部分，对齐和编号样式。我在{\LaTeX3}的指北上着到\verb|\file_input:n|，
+% 结果没找到{\TeX}hackers note说这等同于元语\verb|\input|。然后我就去翻实现，
+% 看到一坨稀奇古怪的判定，我都不太敢用了。（bug预定席）
+%    \begin{macrocode}
+\bool_if:NT \l_@@_layout_fleqn_bool
+  { \file_input:n { fleqn.clo } }
+\bool_if:NT \l_@@_layout_leqno_bool
+  { \file_input:n { leqno.clo } }
+%    \end{macrocode}
+% \subsubsection{「開明」參考文獻設定}
+% 一点都不开明的open bib设定。用封装的\verb|\AtEndClass|钩子定义（因为后面会先让它为空）。（总觉得这种风格不行，随随便便就12格缩进了。）
+%    \begin{macrocode}
+\bool_if:NT \l_@@_layout_openbib_bool
+  {
+    \@@_at_doc_beg:n
+      {
+        \cs_set_nopar:Nn \@openbib@code
+          {
+            \dim_add:Nn \leftmargin { \bibindent }
+            \dim_set_eq:Nn \itemindent { -\bibindent }
+            \dim_set_eq:NN \listparindent \itemindent
+            \dim_set:Nn \parsep { \z@ }
+          }
+        \cs_set_nopar:Nn \newblock { \par }
+      }
+  }
 %    \end{macrocode}
 % \subsubsection{內存管理}
 % 清除不必要的宏。
@@ -829,7 +916,7 @@ NianCLS, 年文檔類
 \@@_macro_release:N \l_@@_layout_draft_bool
 \@@_macro_release:N \l_@@_layout_fleqn_bool
 \@@_macro_release:N \l_@@_layout_leqno_bool
-\@@_macro_release:N \l_@@_layoit_openbib_bool
+\@@_macro_release:N \l_@@_layout_openbib_bool
 %    \end{macrocode}
 % \subsection{字體相關配置}
 % \subsubsection{全局宏申明}
@@ -920,12 +1007,12 @@ NianCLS, 年文檔類
   { \dim_set:Nn \mpt { \p@ } }
 %    \end{macrocode}
 % 实际补正。注意编码等，以及\textsf{expl3}与{\LaTeXe}的兼容性（需小心维护）。
+% 关于使表示字形的控制序列等同于\verb|\relax|的原因等，见\texttt{https://github.com/CTeX-org/forum/issues/293}。
 %    \begin{macrocode}
 \bool_if:NT \l_@@_font_xreal_bool
   {
     \exp_after:wN \cs_set_eq:NN \cs:w TU/lmr/m/n/10 \cs_end: \scan_stop:
-    \exp_after:wN \cs_set_eq:NN \cs:w TU/lmss/m/n/10 \cs_end: \scan_stop:
-    \exp_after:wN \cs_set_eq:NN \cs:w TU/lmtt/m/n/10 \cs_end: \scan_stop:
+    \exp_after:wN \cs_set_eq:NN \cs:w OMX/cmex/m/n/10 \cs_end: \scan_stop:
     \@@_luafunc_new:N \@@_magnify_font_calc
     \group_begin:
       % \char_set_catcode_other:N \$
@@ -1004,9 +1091,6 @@ NianCLS, 年文檔類
 % 先防止标记这些字体的记号被展开。
 %    \begin{macrocode}
 \exp_after:wN \cs_set_eq:NN \cs:w JY3/mc/m/n/10 \cs_end: \scan_stop:
-\exp_after:wN \cs_set_eq:NN \cs:w JY3/gt/m/n/10 \cs_end: \scan_stop:
-\exp_after:wN \cs_set_eq:NN \cs:w JT3/mc/m/n/10 \cs_end: \scan_stop:
-\exp_after:wN \cs_set_eq:NN \cs:w JT3/gt/m/n/10 \cs_end: \scan_stop:
 %    \end{macrocode}
 % 然后封装定义字体参数的命令（{\LaTeXe}提供）。如此可以简单地在将来挂接更多稀奇古怪的特性。然目前只有两个分支。
 %    \begin{macrocode}

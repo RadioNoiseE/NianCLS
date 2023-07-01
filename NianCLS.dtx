@@ -41,6 +41,7 @@ NianCLS, 年文檔類
 \def\ltj@stdyokojfm{eva/{smpl,nstd}}
 \makeatother
 \documentclass[twoside]{ltjsarticle}
+\usepackage[hidelinks]{hyperref}
 \pagestyle{headings}
 %%\documentclass[full]{l3doc}
 \usepackage{doc}
@@ -72,13 +73,15 @@ NianCLS, 年文檔類
 \end{document}
 %</driver>
 % \fi
-% \title{\sffamily\gtfamily 年文檔類{\quad}Nian Class}
+% \title{\sffamily\gtfamily 年文檔類{\quad}Nian Style Class}
 % \author{黄　京}
 % \date{西曆\today}
 % \maketitle
 % % \begin{abstract}
-% % 为在{\LuaTeX}下排印中日文本而作的文档类。基于{\sffamily expl3}构建。
+% % 为在{\LuaTeX}下排印中日文本而作的文档类。基于{\sffamily expl3}构建。设计初衷不同于ltj／bxjs系列，不考虑对旧版本的支持。
+% % 目标为提供一个灵活的可配置的文档类。支持简中、繁中及日本语。
 % % \end{abstract}
+% \tableofcontents
 % \section{初始化}
 % \subsection{載入{\LaTeX3}並檢驗依賴}
 %    \begin{macrocode}
@@ -151,7 +154,7 @@ NianCLS, 年文檔類
 %    \end{macrocode}
 % 「疑」定义\verb|\AtEndOfClass|钩子。
 %    \begin{macrocode}
-\cs_new_protected:Npn \@@_at_doc_end:n { \AtEndOfClass }
+\cs_new_protected:Npn \@@_at_cls_end:n { \AtEndOfClass }
 %    \end{macrocode}
 % 定义\verb|\AtBeginDocument|钩子。
 %    \begin{macrocode}
@@ -193,7 +196,7 @@ NianCLS, 年文檔類
 %    \begin{macrocode}
 \@@_macro_release:N \@@_keyoptions_process:n
 \@@_macro_release:N \@@_at_preamble_end:n
-\@@_macro_release:N \@@_at_doc_end:n
+\@@_macro_release:N \@@_at_cls_end:n
 \@@_macro_release:N \@@_at_doc_begin:n
 \@@_macro_release:N \@@_macro_release:N
 \@@_macro_release:N \@@_luafunc_new:N
@@ -281,16 +284,72 @@ NianCLS, 年文檔類
     direction .initial:n = { yoko }
   }
 %    \end{macrocode}
+% \subsubsection{基準語言}
+% 此处设置待排印文档的基准语言类型：西文或东亚语言。关于东亚语言的区分则在下节关于字体处设置。
+% 两者相互正交。同时暂不在导言区末尾清除其的宏定义。
+%    \begin{macrocode}
+\bool_new:N \l_@@_layout_english_bool
+\keys_define:nn { ncls }
+  {
+    basis .choice:,
+    basis / english .code:n = { \bool_set_true:N \l_@@_layout_english_bool },
+    basis / cjk .code:n = { \bool_set_false:N \l_@@_layout_english_bool },
+    basis / unknown .code:n =
+      {
+        \msg_error:nnxxx { ncls } { unknown-choice }
+          { basis }
+          { english,~cjk }
+          { \exp_not:n { #1 } }
+      },
+    basis .value_required:n = true,
+    basis .initial:n = { cjk }
+  }
+%    \end{macrocode}
 % \subsubsection{文檔類型}
 % 设置文档类型（全局）为文章、论文报告、或书籍。依赖错综复杂，故不使用布尔类型。
+% 同时作为较高层次的设置，会影响其它一些选项，故先行初始化其。
+% 首先申明这些低阶选项的宏。
+%    \begin{macrocode}
+\bool_new:N \l_@@_layout_restonecol_bool
+\bool_new:N \l_@@_layout_twoside_bool
+\bool_new:N \l_@@_layout_mparswitch_bool
+\bool_new:N \l_@@_layout_titlepage_bool
+\bool_new:N \l_@@_layout_openleft_bool
+\bool_new:N \l_@@_layout_openright_bool
+%    \end{macrocode}
+% 随后才是键对值配置。
 %    \begin{macrocode}
 \str_new:N \l_@@_layout_doctype_str
 \keys_define:nn { ncls }
   {
     doctype .choice:,
-    doctype / article .code:n = { \str_set:Nn \l_@@_layout_doctype_str { a } },
-    doctype / report .code:n = { \str_set:Nn \l_@@_layout_doctype_str { r } },
-    doctype / book .code:n = { \str_set:Nn \l_@@_layout_doctype_str { b } },
+    doctype / article .code:n =
+      {
+        \str_set:Nn \l_@@_layout_doctype_str { a }
+        \bool_set_false:N \l_@@_layout_twoside_bool
+        \bool_set_false:N \l_@@_layout_mparswitch_bool
+        \bool_set_false:N \l_@@_layout_titlepage_bool
+        \bool_set_true:N \l_@@_layout_openleft_bool
+        \bool_set_true:N \l_@@_layout_openright_bool
+      },
+    doctype / report .code:n =
+      {
+        \str_set:Nn \l_@@_layout_doctype_str { r }
+        \bool_set_true:N \l_@@_layout_twoside_bool
+        \bool_set_false:N \l_@@_layout_mparswitch_bool
+        \bool_set_true:N \l_@@_layout_titlepage_bool
+        \bool_set_true:N \l_@@_layout_openleft_bool
+        \bool_set_true:N \l_@@_layout_openright_bool
+      },
+    doctype / book .code:n =
+      {
+        \str_set:Nn \l_@@_layout_doctype_str { b }
+        \bool_set_true:N \l_@@_layout_twoside_bool
+        \bool_set_true:N \l_@@_layout_mparswitch_bool
+        \bool_set_true:N \l_@@_layout_titlepage_bool
+        \bool_set_false:N \l_@@_layout_openleft_bool
+        \bool_set_true:N \l_@@_layout_openright_bool
+      },
     doctype .value_required:n = true,
     doctype .initial:n = { article }
   }
@@ -298,7 +357,7 @@ NianCLS, 年文檔類
 % \subsubsection{分欄}
 % 设置全局双栏或单栏。这里只是处理，待后设置。
 %    \begin{macrocode}
-\bool_new:N \l_@@_layout_restonecol_bool
+%<obsolete> \bool_new:N \l_@@_layout_restonecol_bool
 \keys_define:nn { ncls }
   {
     column .choice:,
@@ -320,7 +379,7 @@ NianCLS, 年文檔類
 \tl_new:N \l_@@_layout_column_gap_tl
 \keys_define:nn { ncls }
   {
-    column_gap .tl_set:N = \l_@@_layout_cloumn_gap_tl,
+    column_gap .tl_set:N = \l_@@_layout_column_gap_tl,
     column_gap .value_required:n = true,
     column_gap .initial:n = { 2 \zw }
   }
@@ -328,8 +387,10 @@ NianCLS, 年文檔類
 % \subsubsection{單雙面}
 % 设置是单面列印抑或是双面。事关边距，使用两个布尔参数小心处理。同时，此与文档类型有关（依存系）。
 %    \begin{macrocode}
+%<*obsolete>
 \bool_new:N \l_@@_layout_twoside_bool
 \bool_new:N \l_@@_layout_mparswitch_bool
+%</obsolete>
 \keys_define:nn { ncls }
   {
     print .choice:,
@@ -361,7 +422,7 @@ NianCLS, 年文檔類
 % \subsubsection{標題頁}
 % 是否需要标题页。与文档类型有关（依存系）。
 %    \begin{macrocode}
-\bool_new:N \l_@@_layout_titlepage_bool
+%<obsolete> \bool_new:N \l_@@_layout_titlepage_bool
 \keys_define:nn { ncls }
   {
     titlepage .bool_set:N = \l_@@_layout_titlepage_bool,
@@ -371,8 +432,10 @@ NianCLS, 年文檔類
 % \subsubsection{章節起}
 % 如何开启新的章节呢？大概只针对论文报告及书籍。也用两个布尔类型实现判别。
 %    \begin{macrocode}
+%<*obsolete>
 \bool_new:N \l_@@_layout_openleft_bool
 \bool_new:N \l_@@_layout_openright_bool
+%</obsolete>
 \keys_define:nn { ncls }
   {
     open .choice:,
@@ -491,6 +554,7 @@ NianCLS, 年文檔類
 % \subsubsection{依存係設定缺省給}
 % 最后设置所有依赖文档类型的选项参数。
 %    \begin{macrocode}
+%<*obsolete>
 \str_if_eq:VnT \l_@@_layout_doctype_str { a }
   {
     \keys_set { ncls }
@@ -518,6 +582,7 @@ NianCLS, 年文檔類
         open .initial:n = { right }
       }
   }
+%</obsolete>
 %    \end{macrocode}
 % \subsection{字體相關配置用}
 % \subsubsection{全局基準字體參數設定}
@@ -595,13 +660,35 @@ NianCLS, 年文檔類
     gothic .initial:n = { HaranoAji Gothic }
   }
 %    \end{macrocode}
+% \subsubsection{字間距}
+% 此处为汉字间间距（\textit{kanjiskip}）与西文与汉字间距（\textit{xkanjiskip}）的设置处。暂时不在导言区末尾清除其的宏定义。
+% 首先为汉字间间距的设置接口。
+%    \begin{macrocode}
+\tl_new:N \l_@@_font_kanjiskip_tl
+\keys_define:nn { ncls }
+  {
+    kanjiskip .tl_set:N = \l_@@_font_kanjiskip_tl,
+    kanjiskip .value_required:n = true,
+    kanjiskip .initial:n = { \z@ \@plus .1\zw \@minus .01\zw }
+  }
+%    \end{macrocode}
+% 随后为西文与汉字间间距的接口。
+%    \begin{macrocode}
+\tl_new:N \l_@@_font_xkanjiskip_tl
+\keys_define:nn { ncls }
+  {
+    xkanjiskip .tl_set:N = \l_@@_font_xkanjiskip_tl,
+    xkanjiskip .value_required:n = true,
+    xkanjiskip .initial:n = .25em \@plus .15em \@minus .06em
+  }
+%    \end{macrocode}
 % \subsubsection{字體縮放率設定}
 % 设置全局中日字符缩放率的值。
 %    \begin{macrocode}
 \tl_new:N \l_@@_font_cjscale_tl
 \keys_define:nn { ncls }
   {
-    scale .tl_set:N = \l_@@_font_cjsacle_tl,
+    scale .tl_set:N = \l_@@_font_cjscale_tl,
     scale .value_required:n = true,
     scale .initial:n = { 0.924715 }
   }
@@ -870,7 +957,7 @@ NianCLS, 年文檔類
 % \subsubsection{標題頁設定}
 % 留空。待字体设置完成后再行设定。
 % \subsubsection{章節起設定}
-% 留空。理由跟上面写的「一摸，一样！」。
+% 留空。理由同上。
 % \subsubsection{編譯模式設定}
 % 已经设置好了，直接设置的{\TeX}的标尺长度。
 % \subsubsection{數學公式設定}
@@ -905,6 +992,7 @@ NianCLS, 年文檔類
 % 清除不必要的宏。
 %    \begin{macrocode}
 \@@_macro_release:N \l_@@_layout_tate_bool
+% \@@_macro_release:N \l_@@_layout_english_bool
 \@@_macro_release:N \l_@@_layout_restonecol_bool
 \@@_macro_release:N \l_@@_layout_column_gap_tl
 \@@_macro_release:N \l_@@_layout_twoside_bool
@@ -1088,7 +1176,7 @@ NianCLS, 年文檔類
   }
 %    \end{macrocode}
 % \subsubsection{中日NFSS設定}
-% 先防止标记这些字体的记号被展开。
+% 参考『视觉字号补正』一节。
 %    \begin{macrocode}
 \exp_after:wN \cs_set_eq:NN \cs:w JY3/mc/m/n/10 \cs_end: \scan_stop:
 %    \end{macrocode}
@@ -1100,7 +1188,7 @@ NianCLS, 年文檔類
       {
         \DeclareFontShape { #1 } { #2 } { m } { n }
           {
-            <-> s * [ \tl_use:N \l_@@_font_cjsacale_tl ] #3 :
+            <-> s * [ \tl_use:N \l_@@_font_cjscale_tl ] #3 :
             - kern ; script = cjk ; language = \tl_use:N \l_@@_font_langfeat_tl ;
             jfm = { eva / { \clist_use:Nn \l_@@_jfm_feats_clist { , } #4 } } ;
             fallback = nclsfallback
@@ -1109,7 +1197,7 @@ NianCLS, 年文檔類
       {
         \DeclareFontShape { #1 } { #2 } { m } { n }
           {
-            <-> s * [ \tl_use:N \l_@@_font_cjsacale_tl ] #3 :
+            <-> s * [ \tl_use:N \l_@@_font_cjscale_tl ] #3 :
             - kern ; script = cjk ; language = \tl_use:N \l_@@_font_langfeat_tl ;
             jfm = { eva / { \clist_use:Nn \l_@@_jfm_feats_clist { , } #4 } }
           }
@@ -1141,6 +1229,36 @@ NianCLS, 年文檔類
       }
   }
 %    \end{macrocode}
+% \subsubsection{字體尺寸及連結參數}
+% 首先重定义内核中的\verb|\@setfontsize|宏，支持中日文的某些特殊要求。
+% 因为\verb|\ltjset(x)kanjiskip|不需要花括号，所以说\verb|\exp_args|系列的宏我还是没法用的，真可惜。（太细了也不好）
+%    \begin{macrocode}
+\cs_set:Npn \@setfontsize #1 #2 #3
+  {
+    \ExplSyntaxOn
+    \cs_if_eq:NNT \protect \@typeset@protect
+      { \tl_set:Nn \@currsize { #1 } }
+    \fontsize { #2 } { #3 } \selectfont
+    \dim_compare:nNnT { \parindent } > { \z@ }
+      {
+        \str_if_eq:VnTF \l_@@_lang_cj_str { j }
+          { \dim_set:Nn \parindent { 1 \zw } }
+          { \dim_set:Nn \parindent { 2 \zw } }
+        \bool_if:NT \l_@@_layout_english_bool
+          { \dim_set:Nn \parindent { 1 em } }
+      }
+    \ltj@setpar@global
+    \exp_after:wN \ltjsetkanjiskip \tl_use:N \l_@@_font_kanjiskip_tl
+    \dim_set:Nn \l_tmpa_dim { \ltjgetparameter { xkanjiskip } }
+    \dim_compare:nNnT { \l_tmpa_dim } > { \z@ }
+      { \exp_after:wN \ltjsetxkanjiskip \tl_use:N \l_@@_font_xkanjiskip_tl }
+  }
+%    \end{macrocode}
+% 随后定义本文档类内部使用的设置字体尺寸的宏。不于导言区末尾清除它的定义。
+%    \begin{macrocode}
+\cs_new:Nn \@@_font_setsize:nnn
+  { \@setfontsize #1 { #2 \mpt } { #3 \mpt } }
+%    \end{macrocode}
 % \subsubsection{清理內存}
 % 内存管理。清除不必要的宏定义。
 %    \begin{macrocode}
@@ -1149,6 +1267,8 @@ NianCLS, 年文檔類
 \@@_macro_release:N \l_@@_font_langfeat_tl
 \@@_macro_release:N \l_@@_font_mincho_tl
 \@@_macro_release:N \l_@@_font_gothic_tl
+% \@@_macro_release:N \l_@@_font_kanjiskip_tl
+% \@@_macro_release:N \l_@@_font_xkanjiskip_tl
 \@@_macro_release:N \l_@@_font_cjscale_tl
 \@@_macro_release:N \l_@@_jfm_hanging_tl
 \@@_macro_release:N \l_@@_jfm_linegap_tl
@@ -1156,5 +1276,11 @@ NianCLS, 年文檔類
 \@@_macro_release:N \l_@@_font_fallback_bool
 \@@_macro_release:N \l_@@_font_fallback_tl
 \@@_macro_release:N \@@_font_declareshape:nnnn
+% \@@_macro_release:N \@@_font_setsize:nnn
+%    \end{macrocode}
+% \section{退場}
+% 以上。
+%    \begin{macrocode}
+\endinput
 %    \end{macrocode}
 \endinput

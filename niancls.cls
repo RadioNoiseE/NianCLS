@@ -45,7 +45,7 @@
     \msg_fatel:nn { ncls } { unsupported-engine }
   }
 \cs_new_protected:Npn \__ncls_at_preamble_end:n { \AtEndPreamble }
-\cs_new_protected:Npn \__ncls_at_doc_end:n { \AtEndOfClass }
+\cs_new_protected:Npn \__ncls_at_cls_end:n { \AtEndOfClass }
 \cs_new_protected:Npn \__ncls_at_doc_beg:n { \AtBeginDocument }
 \seq_new:N \g__ncls_aftercls_del_seq
 \cs_new:Nn \__ncls_macro_release:N
@@ -68,7 +68,7 @@
 \dim_set:Nn \mpt { \p@ }
 \__ncls_macro_release:N \__ncls_keyoptions_process:n
 \__ncls_macro_release:N \__ncls_at_preamble_end:n
-\__ncls_macro_release:N \__ncls_at_doc_end:n
+\__ncls_macro_release:N \__ncls_at_cls_end:n
 \__ncls_macro_release:N \__ncls_at_doc_begin:n
 \__ncls_macro_release:N \__ncls_macro_release:N
 \__ncls_macro_release:N \__ncls_luafunc_new:N
@@ -136,17 +136,62 @@
     direction .value_required:n = true,
     direction .initial:n = { yoko }
   }
+\bool_new:N \l__ncls_layout_english_bool
+\keys_define:nn { ncls }
+  {
+    basis .choice:,
+    basis / english .code:n = { \bool_set_true:N \l__ncls_layout_english_bool },
+    basis / cjk .code:n = { \bool_set_false:N \l__ncls_layout_english_bool },
+    basis / unknown .code:n =
+      {
+        \msg_error:nnxxx { ncls } { unknown-choice }
+          { basis }
+          { english,~cjk }
+          { \exp_not:n { #1 } }
+      },
+    basis .value_required:n = true,
+    basis .initial:n = { cjk }
+  }
+\bool_new:N \l__ncls_layout_restonecol_bool
+\bool_new:N \l__ncls_layout_twoside_bool
+\bool_new:N \l__ncls_layout_mparswitch_bool
+\bool_new:N \l__ncls_layout_titlepage_bool
+\bool_new:N \l__ncls_layout_openleft_bool
+\bool_new:N \l__ncls_layout_openright_bool
 \str_new:N \l__ncls_layout_doctype_str
 \keys_define:nn { ncls }
   {
     doctype .choice:,
-    doctype / article .code:n = { \str_set:Nn \l__ncls_layout_doctype_str { a } },
-    doctype / report .code:n = { \str_set:Nn \l__ncls_layout_doctype_str { r } },
-    doctype / book .code:n = { \str_set:Nn \l__ncls_layout_doctype_str { b } },
+    doctype / article .code:n =
+      {
+        \str_set:Nn \l__ncls_layout_doctype_str { a }
+        \bool_set_false:N \l__ncls_layout_twoside_bool
+        \bool_set_false:N \l__ncls_layout_mparswitch_bool
+        \bool_set_false:N \l__ncls_layout_titlepage_bool
+        \bool_set_true:N \l__ncls_layout_openleft_bool
+        \bool_set_true:N \l__ncls_layout_openright_bool
+      },
+    doctype / report .code:n =
+      {
+        \str_set:Nn \l__ncls_layout_doctype_str { r }
+        \bool_set_true:N \l__ncls_layout_twoside_bool
+        \bool_set_false:N \l__ncls_layout_mparswitch_bool
+        \bool_set_true:N \l__ncls_layout_titlepage_bool
+        \bool_set_true:N \l__ncls_layout_openleft_bool
+        \bool_set_true:N \l__ncls_layout_openright_bool
+      },
+    doctype / book .code:n =
+      {
+        \str_set:Nn \l__ncls_layout_doctype_str { b }
+        \bool_set_true:N \l__ncls_layout_twoside_bool
+        \bool_set_true:N \l__ncls_layout_mparswitch_bool
+        \bool_set_true:N \l__ncls_layout_titlepage_bool
+        \bool_set_false:N \l__ncls_layout_openleft_bool
+        \bool_set_true:N \l__ncls_layout_openright_bool
+      },
     doctype .value_required:n = true,
     doctype .initial:n = { article }
   }
-\bool_new:N \l__ncls_layout_restonecol_bool
 \keys_define:nn { ncls }
   {
     column .choice:,
@@ -165,12 +210,10 @@
 \tl_new:N \l__ncls_layout_column_gap_tl
 \keys_define:nn { ncls }
   {
-    column_gap .tl_set:N = \l__ncls_layout_cloumn_gap_tl,
+    column_gap .tl_set:N = \l__ncls_layout_column_gap_tl,
     column_gap .value_required:n = true,
     column_gap .initial:n = { 2 \zw }
   }
-\bool_new:N \l__ncls_layout_twoside_bool
-\bool_new:N \l__ncls_layout_mparswitch_bool
 \keys_define:nn { ncls }
   {
     print .choice:,
@@ -198,14 +241,11 @@
       },
     print .value_required:n = true
   }
-\bool_new:N \l__ncls_layout_titlepage_bool
 \keys_define:nn { ncls }
   {
     titlepage .bool_set:N = \l__ncls_layout_titlepage_bool,
     titlepage .value_required:n = true
   }
-\bool_new:N \l__ncls_layout_openleft_bool
-\bool_new:N \l__ncls_layout_openright_bool
 \keys_define:nn { ncls }
   {
     open .choice:,
@@ -305,33 +345,6 @@
     bibstyle .value_required:n = ture,
     bibstyle .initial:n = { plain }
   }
-\str_if_eq:VnT \l__ncls_layout_doctype_str { a }
-  {
-    \keys_set { ncls }
-      {
-        print .initial:n = { oneside },
-        titlepage .initial:n = { false },
-        open .initial:n = { any }
-      }
-  }
-\str_if_eq:VnT \l__ncls_layout_doctype_str { r }
-  {
-    \keys_set { ncls }
-      {
-        print .initial:n = { vartwoside },
-        titlepage .initial:n = { true },
-        open .initial:n = { any }
-      }
-  }
-\str_if_eq:VnT \l__ncls_layout_doctype_str { b }
-  {
-    \keys_set { ncls }
-      {
-        print .initial:n = { twoside },
-        titlepage .initial:n = { true },
-        open .initial:n = { right }
-      }
-  }
 \tl_new:N \l__ncls_font_magscale_tl
 \keys_define:nn { ncls }
   {
@@ -395,10 +408,24 @@
     mincho .initial:n = { HaranoAji Mincho },
     gothic .initial:n = { HaranoAji Gothic }
   }
+\tl_new:N \l__ncls_font_kanjiskip_tl
+\keys_define:nn { ncls }
+  {
+    kanjiskip .tl_set:N = \l__ncls_font_kanjiskip_tl,
+    kanjiskip .value_required:n = true,
+    kanjiskip .initial:n = { \z@ \@plus .1\zw \@minus .01\zw }
+  }
+\tl_new:N \l__ncls_font_xkanjiskip_tl
+\keys_define:nn { ncls }
+  {
+    xkanjiskip .tl_set:N = \l__ncls_font_xkanjiskip_tl,
+    xkanjiskip .value_required:n = true,
+    xkanjiskip .initial:n = .25em \@plus .15em \@minus .06em
+  }
 \tl_new:N \l__ncls_font_cjscale_tl
 \keys_define:nn { ncls }
   {
-    scale .tl_set:N = \l__ncls_font_cjsacle_tl,
+    scale .tl_set:N = \l__ncls_font_cjscale_tl,
     scale .value_required:n = true,
     scale .initial:n = { 0.924715 }
   }
@@ -728,7 +755,7 @@
       {
         \DeclareFontShape { #1 } { #2 } { m } { n }
           {
-            <-> s * [ \tl_use:N \l__ncls_font_cjsacale_tl ] #3 :
+            <-> s * [ \tl_use:N \l__ncls_font_cjscale_tl ] #3 :
             - kern ; script = cjk ; language = \tl_use:N \l__ncls_font_langfeat_tl ;
             jfm = { eva / { \clist_use:Nn \l__ncls_jfm_feats_clist { , } #4 } } ;
             fallback = nclsfallback
@@ -737,7 +764,7 @@
       {
         \DeclareFontShape { #1 } { #2 } { m } { n }
           {
-            <-> s * [ \tl_use:N \l__ncls_font_cjsacale_tl ] #3 :
+            <-> s * [ \tl_use:N \l__ncls_font_cjscale_tl ] #3 :
             - kern ; script = cjk ; language = \tl_use:N \l__ncls_font_langfeat_tl ;
             jfm = { eva / { \clist_use:Nn \l__ncls_jfm_feats_clist { , } #4 } }
           }
@@ -762,6 +789,28 @@
           { \DeclareFontShape { #1 } { mc } { ####1 } { ##1 } { <-> ssub * gt/m/n } { } }
       }
   }
+\cs_set:Npn \@setfontsize #1 #2 #3
+  {
+    \ExplSyntaxOn
+    \cs_if_eq:NNT \protect \@typeset@protect
+      { \tl_set:Nn \@currsize { #1 } }
+    \fontsize { #2 } { #3 } \selectfont
+    \dim_compare:nNnT { \parindent } > { \z@ }
+      {
+        \str_if_eq:VnTF \l__ncls_lang_cj_str { j }
+          { \dim_set:Nn \parindent { 1 \zw } }
+          { \dim_set:Nn \parindent { 2 \zw } }
+        \bool_if:NT \l__ncls_layout_english_bool
+          { \dim_set:Nn \parindent { 1 em } }
+      }
+    \ltj@setpar@global
+    \exp_after:wN \ltjsetkanjiskip \tl_use:N \l__ncls_font_kanjiskip_tl
+    \dim_set:Nn \l_tmpa_dim { \ltjgetparameter { xkanjiskip } }
+    \dim_compare:nNnT { \l_tmpa_dim } > { \z@ }
+      { \exp_after:wN \ltjsetxkanjiskip \tl_use:N \l__ncls_font_xkanjiskip_tl }
+  }
+\cs_new:Nn \__ncls_font_setsize:nnn
+  { \@setfontsize #1 { #2 \mpt } { #3 \mpt } }
 \__ncls_macro_release:N \l__ncls_font_magscale_tl
 \__ncls_macro_release:N \l__ncls_lang_cj_str
 \__ncls_macro_release:N \l__ncls_font_langfeat_tl

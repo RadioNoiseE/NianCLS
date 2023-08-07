@@ -100,7 +100,7 @@ NianCLS, 年文檔類
 \cs_if_exist:NF \NewDocumentCommand
   { \RequirePackage { xparse } }
 \cs_if_exist:NTF \ProcessKeyOptions
-	{ \cs_new:Nn \@@_keyoptions_process:n { \ProcessKeyOptions [ #1 ] } }
+  { \cs_new:Nn \@@_keyoptions_process:n { \ProcessKeyOptions [ #1 ] } }
   {
     \RequirePackage { l3keys2e }
     \cs_new:Nn \@@_keyoptions_process:n { \ProcessKeysOptions { #1 } }
@@ -540,7 +540,7 @@ NianCLS, 年文檔類
         \msg_error:nnxxx { ncls } { unknown-choice }
           { eqalign }
           { left,~middle }
-					{ \exp_not:n { #1 } }
+          { \exp_not:n { #1 } }
       },
     eqalign .value_required:n = true,
     eqalign .initial:n = { middle }
@@ -559,7 +559,7 @@ NianCLS, 年文檔類
         \msg_error:nnxxx { ncls } { unknown-choice }
           { eqnum }
           { left,~right }
-					{ \exp_not:n { #1 } }
+          { \exp_not:n { #1 } }
       },
     eqnum .value_required:n = true,
     eqnum .initial:n = { right }
@@ -837,7 +837,7 @@ NianCLS, 年文檔類
   {
     \prop_put_if_new:Nnn \l_@@_paper_sizelist_prop
       { #1 }
-			{ #2 , #3 }
+      { #2 , #3 }
   }
 %    \end{macrocode}
 %%%% ^^X <=|
@@ -1316,7 +1316,7 @@ NianCLS, 年文檔類
             - kern ; script = cjk ; language = \tl_use:N \l_@@_font_langfeat_tl ;
             jfm = eva / { \clist_use:Nn \l_@@_jfm_feats_clist { , } #4 } ;
             fallback = nclsfallback
-					} { }
+          } { }
       }
       {
         \DeclareFontShape { #1 } { #2 } { m } { n }
@@ -1324,7 +1324,7 @@ NianCLS, 年文檔類
             <-> s * [ \tl_use:N \l_@@_font_cjscale_tl ] #3 :
             - kern ; script = cjk ; language = \tl_use:N \l_@@_font_langfeat_tl ;
             jfm = eva / { \clist_use:Nn \l_@@_jfm_feats_clist { , } #4 }
-					} { }
+          } { }
       }
   }
 %    \end{macrocode}
@@ -1423,8 +1423,8 @@ NianCLS, 年文檔類
 \cs_new:Npn \@@_baseline_ifnarrow:nn
   {
     \legacy_if:nTF { narrowbaselines }
-		  { \use_i:nn }
-     	{ \use_ii:nn }
+      { \use_i:nn }
+       { \use_ii:nn }
   }
 %    \end{macrocode}
 %%%% ^^X <=|
@@ -1433,16 +1433,16 @@ NianCLS, 年文檔類
 % 终于可以设置重要的字号及行距等相关信息了。首先是正常尺寸（10pt）。因为我们的引擎她不支持mag，所以都是用标准尺寸缩放出来的，也就在这里可以省一点事：全局使用标准尺寸了。根据ltjs文档类，公称10分的（中）日文字体约为9.25分（也就是ASCII的0.961倍），所以设置16分的行间距相当宽松；同时16比上9.25大概是1.73，也比较接近传统「二分四分」的约定。顺便，这里就直接用expl3的语法了。而且，都用expl3了，尺寸就直接写了。
 %    \begin{macrocode}
 \cs_set:Npn \normalsize
-	{
+  {
     \@@_baseline_ifnarrow:nn
-		  { \@@_font_setsize:nnn { \normalsize } { 10 pt } { 12 pt } }
-			{ \@@_font_setsize:nnn { \normalsize } { 10 pt } { 16 pt } }
+      { \@@_font_setsize:nnn { \normalsize } { 10 pt } { 12 pt } }
+      { \@@_font_setsize:nnn { \normalsize } { 10 pt } { 16 pt } }
     \skip_set:Nn \abovedisplayskip { 11 \mpt~plus 3\mpt~minus 4\mpt } % FIXME
     \skip_set:Nn \abovedisplayshortskip { 0 \mpt~plus 3\mpt } % FIXME
-		\skip_set:Nn \belowdisplayskip { 9 \mpt~plus 3\mpt~4\mpt } % FIXME
-		\skip_set:Nn \belowdisplayshortskip { 0 \mpt~plus 3 \mpt } % FIXME
-		\cs_new_eq:NN \@listi \@listI
-	}
+    \skip_set:Nn \belowdisplayskip { 9 \mpt~plus 3\mpt~4\mpt } % FIXME
+    \skip_set:Nn \belowdisplayshortskip { 0 \mpt~plus 3 \mpt } % FIXME
+    \cs_new_eq:NN \@listi \@listI
+  }
 %    \end{macrocode}
 % 然后先初始化字体，然后找一个字测字框数据。
 %    \begin{macrocode}

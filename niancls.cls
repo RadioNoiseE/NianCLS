@@ -20,7 +20,7 @@
 \cs_if_exist:NF \NewDocumentCommand
   { \RequirePackage { xparse } }
 \cs_if_exist:NTF \ProcessKeyOptions
-{ \cs_new:Nn \__ncls_keyoptions_process:n { \ProcessKeyOptions [ #1 ] } }
+  { \cs_new:Nn \__ncls_keyoptions_process:n { \ProcessKeyOptions [ #1 ] } }
   {
     \RequirePackage { l3keys2e }
     \cs_new:Nn \__ncls_keyoptions_process:n { \ProcessKeysOptions { #1 } }
@@ -355,7 +355,7 @@
         \msg_error:nnxxx { ncls } { unknown-choice }
           { eqalign }
           { left,~middle }
-{ \exp_not:n { #1 } }
+          { \exp_not:n { #1 } }
       },
     eqalign .value_required:n = true,
     eqalign .initial:n = { middle }
@@ -371,7 +371,7 @@
         \msg_error:nnxxx { ncls } { unknown-choice }
           { eqnum }
           { left,~right }
-{ \exp_not:n { #1 } }
+          { \exp_not:n { #1 } }
       },
     eqnum .value_required:n = true,
     eqnum .initial:n = { right }
@@ -548,7 +548,7 @@
   {
     \prop_put_if_new:Nnn \l__ncls_paper_sizelist_prop
       { #1 }
-{ #2 , #3 }
+      { #2 , #3 }
   }
 %%%% ^^X <=|
 %%%% ^^X 尺寸參數設定 |=>
@@ -896,7 +896,7 @@
             - kern ; script = cjk ; language = \tl_use:N \l__ncls_font_langfeat_tl ;
             jfm = eva / { \clist_use:Nn \l__ncls_jfm_feats_clist { , } #4 } ;
             fallback = nclsfallback
-					} { }
+          } { }
       }
       {
         \DeclareFontShape { #1 } { #2 } { m } { n }
@@ -904,7 +904,7 @@
             <-> s * [ \tl_use:N \l__ncls_font_cjscale_tl ] #3 :
             - kern ; script = cjk ; language = \tl_use:N \l__ncls_font_langfeat_tl ;
             jfm = eva / { \clist_use:Nn \l__ncls_jfm_feats_clist { , } #4 }
-					} { }
+          } { }
       }
   }
 \__ncls_font_declareshape:nnnn { JY3 } { mc } { \tl_use:N \l__ncls_font_mincho_tl } { }
@@ -982,22 +982,22 @@
 \cs_new:Npn \__ncls_baseline_ifnarrow:nn
   {
     \legacy_if:nTF { narrowbaselines }
-  { \use_i:nn }
-      { \use_ii:nn }
+      { \use_i:nn }
+       { \use_ii:nn }
   }
 %%%% ^^X <=|
 %%%% ^^X 字體尺寸 |=>
 \cs_set:Npn \normalsize
-{
+  {
     \__ncls_baseline_ifnarrow:nn
-  { \__ncls_font_setsize:nnn { \normalsize } { 10 pt } { 12 pt } }
-{ \__ncls_font_setsize:nnn { \normalsize } { 10 pt } { 16 pt } }
+      { \__ncls_font_setsize:nnn { \normalsize } { 10 pt } { 12 pt } }
+      { \__ncls_font_setsize:nnn { \normalsize } { 10 pt } { 16 pt } }
     \skip_set:Nn \abovedisplayskip { 11 \mpt~plus 3\mpt~minus 4\mpt } % FIXME
     \skip_set:Nn \abovedisplayshortskip { 0 \mpt~plus 3\mpt } % FIXME
-\skip_set:Nn \belowdisplayskip { 9 \mpt~plus 3\mpt~4\mpt } % FIXME
-\skip_set:Nn \belowdisplayshortskip { 0 \mpt~plus 3 \mpt } % FIXME
-\cs_new_eq:NN \@listi \@listI
-}
+    \skip_set:Nn \belowdisplayskip { 9 \mpt~plus 3\mpt~4\mpt } % FIXME
+    \skip_set:Nn \belowdisplayshortskip { 0 \mpt~plus 3 \mpt } % FIXME
+    \cs_new_eq:NN \@listi \@listI
+  }
 \mcfamily \selectfont \normalsize
 \hbox_set:Nn \l_tmpa_box { 年 }
 \dim_new:N \Cht

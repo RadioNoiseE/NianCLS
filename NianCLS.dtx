@@ -1,9 +1,10 @@
+%%%%%% ^^X MetaComment |=>
 % \iffalse meta-comment
 %<*internal>
 \iffalse
 %</internal>
 %<*copyright>
-Copyright 2023, RadioNoiseE
+Copyright 2023, RadioNoiseE／黄京
 NianCLS, 年文檔類
 %</copyright>
 %<*internal>
@@ -43,25 +44,16 @@ NianCLS, 年文檔類
 \documentclass[twoside]{ltjsarticle}
 \usepackage[hidelinks]{hyperref}
 \pagestyle{headings}
-%%\documentclass[full]{l3doc}
 \usepackage{doc}
 \EnableCrossrefs
 \CodelineIndex
 \RecordChanges
 \def\MakePrivateLetters{\makeatletter\catcode`\_=11\catcode`\:=11}
-%%\def\PrintDescribeMacro{}
-%%\def\PrintDescribeEnv{}
-%%\def\PrintMacroName{}
-%%\def\PrintEnvName{}
 \usepackage{luatexja-fontspec}
-%%\usepackage{fontspec}
 \setmainfont{Linux Libertine O}
-\setmainjfont{SourceHan Serif SC}[YokoFeatures={JFM={eva/{smpl,nstd}}}]
+\setmainjfont{SourceHan Serif SC}[YokoFeatures={JFM={eva/{smpl,nstd} }}]
 \setsansfont{Linux Biolinum O}
-%%\setmonofont{CMU Concrete}
 \setmonofont{Iosevka Slab}[Scale=0.694,FakeStretch=1.2]
-%%\setmonofont{LetterGothicStdMedium.ttf}[Scale=MatchLowercase]
-%%\setmonofont{Fira Code}[Scale=MatchLowercase]
 \def\LuaTeX{Lua\kern-.2ex\TeX}
 \makeatletter
 \def\theCodelineNo{\llap{\reset@font\tiny\sffamily\arabic{CodelineNo}\hskip1pt}}
@@ -73,21 +65,30 @@ NianCLS, 年文檔類
 \end{document}
 %</driver>
 % \fi
+%%%%%% ^^X <=|
+%%%%%% ^^X Title |=>
 % \title{\sffamily\gtfamily 年文檔類{\quad}Nian Style Class}
 % \author{黄　京}
 % \date{西曆\today}
 % \maketitle
-% % \begin{abstract}
-% % 为在{\LuaTeX}下排印中日文本而作的文档类。基于{\sffamily expl3}构建。设计初衷不同于ltj／bxjs系列，不考虑对旧版本的支持。
-% % 目标为提供一个灵活的可配置的文档类。支持简中、繁中及日本语。
-% % \end{abstract}
+%%%%%% ^^X <=|
+%%%%%% ^^X Abstract |=>
+%% \begin{abstract}
+%% 为在{\LuaTeX}下排印中日文本而作的文档类。基于{\sffamily expl3}构建。设计初衷不同于ltj／bxjs系列，不考虑对旧版本的支持。
+%% 目标为提供一个灵活的可配置的文档类。支持简中、繁中及日本语。
+%% \end{abstract}
+%%%%%% ^^X <=|
+%%%%%% ^^X TableOfContents |=>
 % \tableofcontents
+%%%%%% ^^X <=|
+%%%%%% ^^X 初始化 |=>
 % \section{初始化}
+%%%%% ^^X 載入{\LaTeX3}並檢驗依賴 |=>
 % \subsection{載入{\LaTeX3}並檢驗依賴}
 %    \begin{macrocode}
 \NeedsTeXFormat{LaTeX2e}
 \RequirePackage{expl3}
-\ProvidesExplClass{niancls}{2023-05-20}{1.0.0}{Nian Document Class}
+\ProvidesExplClass{niancls}{2023-08-05}{0.0.0}{Nian Document Class}
 %    \end{macrocode}
 % 定义载入文档类信息等。
 %    \begin{macrocode}
@@ -99,10 +100,10 @@ NianCLS, 年文檔類
 \cs_if_exist:NF \NewDocumentCommand
   { \RequirePackage { xparse } }
 \cs_if_exist:NTF \ProcessKeyOptions
-  { \cs_new_protected:Nn \@@_keyoptions_process:n { \ProcessKeyOptions { #1 } } }
+	{ \cs_new:Nn \@@_keyoptions_process:n { \ProcessKeyOptions [ #1 ] } }
   {
     \RequirePackage { l3keys2e }
-    \cs_new_protected:Nn \@@_keyoptions_process:n { \ProcessKeysOptions { #1 } }
+    \cs_new:Nn \@@_keyoptions_process:n { \ProcessKeysOptions { #1 } }
   }
 \cs_if_exist:NF \AtEndPreamble
   { \RequirePackage { etoolbox } }
@@ -147,6 +148,8 @@ NianCLS, 年文檔類
     \msg_fatel:nn { ncls } { unsupported-engine }
   }
 %    \end{macrocode}
+%%%%% ^^X <=|
+%%%%% ^^X 私有定義 |=>
 % \subsection{私有定義}
 % 定义\verb|\AtEndPreamble|钩子。
 %    \begin{macrocode}
@@ -191,6 +194,8 @@ NianCLS, 年文檔類
 \dim_new:N \mpt
 \dim_set:Nn \mpt { \p@ }
 %    \end{macrocode}
+%%%%% ^^X <=|
+%%%%% ^^X 內存清理 |=>
 % \subsection{內存清理}
 % 在导言区末尾清除所有非必要宏。
 %    \begin{macrocode}
@@ -202,8 +207,13 @@ NianCLS, 年文檔類
 \@@_macro_release:N \@@_luafunc_new:N
 \@@_macro_release:N \@@_luafunc_use:N
 %    \end{macrocode}
+%%%%% ^^X <=|
+%%%%%% ^^X <=|
+%%%%%% ^^X 鍵對直之「預處理」 |=>
 % \section{鍵對直之「預處理」}
+%%%%% ^^X 紙張配置用 |=>
 % \subsection{紙張配置用}
+%%%% ^^X 尺寸信息 |=>
 % \subsubsection{尺寸信息}
 % 处理纸张尺寸信息。
 %    \begin{macrocode}
@@ -215,6 +225,8 @@ NianCLS, 年文檔類
     peper .initial:n = { a4 }
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 輔助線 |=>
 % \subsubsection{輔助線}
 % 是否需要辅助线。为了方便分类，将tombow和mentuke都并入corpmark类，并扔掉了tombo。「补完」
 %    \begin{macrocode}
@@ -243,6 +255,8 @@ NianCLS, 年文檔類
     corpmark .value_required:n = true
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 頁面方向 |=>
 % \subsubsection{頁面方向}
 % 设置页面方向。
 %    \begin{macrocode}
@@ -263,7 +277,11 @@ NianCLS, 年文檔類
     orientation .initial:n = { portrait }
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%%% ^^X <=|
+%%%%% ^^X 選項設定 |=>
 % \subsection{選項設定}
+%%%% ^^X 組版方向 |=>
 % \subsubsection{組版方向}
 % 确定使用竖书或是横排。
 %    \begin{macrocode}
@@ -284,6 +302,8 @@ NianCLS, 年文檔類
     direction .initial:n = { yoko }
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 基準語言 |=>
 % \subsubsection{基準語言}
 % 此处设置待排印文档的基准语言类型：西文或东亚语言。关于东亚语言的区分则在下节关于字体处设置。
 % 两者相互正交。同时暂不在导言区末尾清除其的宏定义。
@@ -305,6 +325,8 @@ NianCLS, 年文檔類
     basis .initial:n = { cjk }
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 文檔類型 |=>
 % \subsubsection{文檔類型}
 % 设置文档类型（全局）为文章、论文报告、或书籍。依赖错综复杂，故不使用布尔类型。
 % 同时作为较高层次的设置，会影响其它一些选项，故先行初始化其。
@@ -354,6 +376,8 @@ NianCLS, 年文檔類
     doctype .initial:n = { article }
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 分欄 |=>
 % \subsubsection{分欄}
 % 设置全局双栏或单栏。这里只是处理，待后设置。
 %    \begin{macrocode}
@@ -384,6 +408,8 @@ NianCLS, 年文檔類
     column_gap .initial:n = { 2 \zw }
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 單雙面 |=>
 % \subsubsection{單雙面}
 % 设置是单面列印抑或是双面。事关边距，使用两个布尔参数小心处理。同时，此与文档类型有关（依存系）。
 %    \begin{macrocode}
@@ -419,6 +445,8 @@ NianCLS, 年文檔類
     print .value_required:n = true
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 標題頁 |=>
 % \subsubsection{標題頁}
 % 是否需要标题页。与文档类型有关（依存系）。
 %    \begin{macrocode}
@@ -429,6 +457,8 @@ NianCLS, 年文檔類
     titlepage .value_required:n = true
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 章節起 |=>
 % \subsubsection{章節起}
 % 如何开启新的章节呢？大概只针对论文报告及书籍。也用两个布尔类型实现判别。
 %    \begin{macrocode}
@@ -464,6 +494,8 @@ NianCLS, 年文檔類
     open .value_required:n = true
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 編譯模式 |=>
 % \subsubsection{編譯模式}
 % 最终成品或暂时替代。其实就是坏盒子长度的区别（零或非零），当然此处也会用到一个布尔型值。由于此时\verb|\mpt|还未被定义，故此处先将其设为\verb|\p@|，用户指定时（希望）它会被正确定义。「需要补完」
 %    \begin{macrocode}
@@ -492,7 +524,9 @@ NianCLS, 年文檔類
     version .initial:n = { final }
   }
 %    \end{macrocode}
-% \subsubsection{數學公式設定}
+%%%% ^^X <=|
+%%%% ^^X 數學公式 |=>
+% \subsubsection{數學公式}
 % 此处设置数学公式的排版大方向，说人话就是对齐排列方式和编号方式。首先是对齐。
 %    \begin{macrocode}
 \bool_new:N \l_@@_layout_fleqn_bool
@@ -506,10 +540,10 @@ NianCLS, 年文檔類
         \msg_error:nnxxx { ncls } { unknown-choice }
           { eqalign }
           { left,~middle }
-          { \exp_not:n { #1 }
+					{ \exp_not:n { #1 } }
       },
-    eqalign / value_required:n = true,
-    eqalign / initial:n = { middle }
+    eqalign .value_required:n = true,
+    eqalign .initial:n = { middle }
   }
 %    \end{macrocode}
 % 其次则是编号。
@@ -525,12 +559,14 @@ NianCLS, 年文檔類
         \msg_error:nnxxx { ncls } { unknown-choice }
           { eqnum }
           { left,~right }
-          { \exp_not:n { #1 }
+					{ \exp_not:n { #1 } }
       },
     eqnum .value_required:n = true,
     eqnum .initial:n = { right }
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 參考文獻式樣設定 |=>
 % \subsubsection{參考文獻式樣設定}
 % 主要是支持open bib格式，虽然有些无聊。
 %    \begin{macrocode}
@@ -547,10 +583,12 @@ NianCLS, 年文檔類
           { open,~plain }
           { \exp_not:n { #1 } }
       },
-    bibstyle .value_required:n = ture,
+    bibstyle .value_required:n = true,
     bibstyle .initial:n = { plain }
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 依存係設定缺省給 |=>
 % \subsubsection{依存係設定缺省給}
 % 最后设置所有依赖文档类型的选项参数。
 %    \begin{macrocode}
@@ -584,7 +622,11 @@ NianCLS, 年文檔類
   }
 %</obsolete>
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%%% ^^X <=|
+%%%%% ^^X 字體相關配置用 |=>
 % \subsection{字體相關配置用}
+%%%% ^^X 全局基準字體參數設定 |=>
 % \subsubsection{全局基準字體參數設定}
 % 处理用户所需的全局基准字体设置。
 %    \begin{macrocode}
@@ -624,6 +666,8 @@ NianCLS, 年文檔類
     fontsize .initial:n = { 10pt }
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 語言設定 |=>
 % \subsubsection{語言設定}
 % 设置文档类之全局语言。
 %    \begin{macrocode}
@@ -645,6 +689,8 @@ NianCLS, 年文檔類
     language .initial:n = { jp }
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 字體設定 |=>
 % \subsubsection{字體設定}
 % 设定全局明朝及哥特字体。
 %    \begin{macrocode}
@@ -660,6 +706,8 @@ NianCLS, 年文檔類
     gothic .initial:n = { HaranoAji Gothic }
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 字間距 |=>
 % \subsubsection{字間距}
 % 此处为汉字间间距（\textit{kanjiskip}）与西文与汉字间距（\textit{xkanjiskip}）的设置处。暂时不在导言区末尾清除其的宏定义。
 % 首先为汉字间间距的设置接口。
@@ -682,6 +730,8 @@ NianCLS, 年文檔類
     xkanjiskip .initial:n = .25em \@plus .15em \@minus .06em
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 字體縮放率設定 |=>
 % \subsubsection{字體縮放率設定}
 % 设置全局中日字符缩放率的值。
 %    \begin{macrocode}
@@ -693,6 +743,8 @@ NianCLS, 年文檔類
     scale .initial:n = { 0.924715 }
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 字體矩陣高級設定 |=>
 % \subsubsection{字體矩陣高級設定}
 % 设置全局标点特性。
 %    \begin{macrocode}
@@ -706,6 +758,8 @@ NianCLS, 年文檔類
     punct .value_required:n = true
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 視覺字號補正 |=>
 % \subsubsection{視覺字號補正}
 % 判断是否对NFSS视觉字号进行补正。
 %    \begin{macrocode}
@@ -719,6 +773,8 @@ NianCLS, 年文檔類
     magstyle .initial:n = { xreal }
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 回滾字體特性 |=>
 % \subsubsection{回滾字體特性}
 % 设置（可选）的回滚字体特性。其依赖\textsf{luaotfload}宏集的实验特性，危险呐。
 %    \begin{macrocode}
@@ -734,24 +790,36 @@ NianCLS, 年文檔類
     fallback .value_required:n = true
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%%% ^^X <=|
+%%%%% ^^X 初始化處理 |=>
 % \subsection{初始化處理}
 % 使用封装的宏处理用户设置。
 %    \begin{macrocode}
 \@@_keyoptions_process:n { ncls }
 %    \end{macrocode}
+%%%%% ^^X <=|
+%%%%% ^^X 衝突檢測 |=>
 % \subsection{衝突檢測}
+%%%% ^^X 選項設置 |=>
 % \subsubsection{選項設置}
 % 当文档类型为article时，应忽略open选项。其馀延后。「待补完」
+%%%% ^^X <=|
+%%%%% ^^X <=|
+%%%%%% ^^X <=|
+%%%%%% ^^X 主要特性 |=>
 % \section{主要特性}
+%%%%% ^^X 紙張尺寸配置 |=>
 % \subsection{紙張尺寸配置}
+%%%% ^^X 全局宏申明 |=>
 % \subsubsection{全局宏申明}
 % 申明存储纸张尺寸信息的特性列表。
 %    \begin{macrocode}
-\prop_new:N \g_@@_paper_sizelist_prop
+\prop_new:N \l_@@_paper_sizelist_prop
 %    \end{macrocode}
 % 用户指定、暂时存储的字列表已定义，此处存储最终数据的逗号列表及纸长度及宽度「优化」的全局申明。
 %    \begin{macrocode}
-\clist_new:N \g_@@_paper_sizeconf_clist
+\clist_new:N \l_@@_paper_sizeconf_clist
 % \dim_new:N \g_@@_paper_width_dim
 % \dim_new:N \g_@@_paper_height_dim
 %    \end{macrocode}
@@ -760,16 +828,20 @@ NianCLS, 年文檔類
 % \tl_new:N \l_@@_paper_widthaux_tl
 % \tl_new:N \l_@@_paper_heightaux_tl
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 主要功能宏 |=>
 % \subsubsection{主要功能宏}
 % 随后定义用于添加尺寸信息的宏。
 %    \begin{macrocode}
 \cs_new:Nn \@@_paper_addsize:nnn
   {
-    \prop_gput_if_new:Nnn \g_@@_paper_sizelist_prop
+    \prop_put_if_new:Nnn \l_@@_paper_sizelist_prop
       { #1 }
-      { #2 , #3 }
+			{ #2 , #3 }
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 尺寸參數設定 |=>
 % \subsubsection{尺寸參數設定}
 % 通过\verb|\__ncls_addpapersize:nnn|设置具体参数。
 %    \begin{macrocode}
@@ -803,16 +875,14 @@ NianCLS, 年文檔類
 \@@_paper_addsize:nnn { b6j } {  128 mm } {  182 mm }
 \@@_paper_addsize:nnn { screen } { 225 mm } { 180 mm }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 內部參數處理 |=>
 % \subsubsection{內部參數處理}
-% 处理用户设定「一」：处理键对值列表的两种分支情况。
+% 处理用户设定「一」：处理键对值列表的两种分支情况。（我之前用\verb|\tl_to_str:N \l_@@_paper_sizeinfo_tl|竟然报错了，不知道是不是被等同于\verb|\string|了还是\verb|o|展开不充分。）
 %    \begin{macrocode}
-\prop_if_in:NoT \g_@@_paper_sizelist_prop
-  { \tl_to_str:N \l_@@_paper_sizeinfo_tl }
-  {
-    \prop_get:NoN \g_@@_paper_sizelist_prop
-      { \tl_to_str:N \l_@@_paper_sizeinfo_tl }
-      \l_@@_paper_sizeinfo_tl
-  }
+\prop_get:NoN \l_@@_paper_sizelist_prop
+  { \l_@@_paper_sizeinfo_tl }
+  \l_@@_paper_sizeinfo_tl
 %    \end{macrocode}
 % 处理用户设定「二」：处理字列表，使用逗号列表将长、宽分离。
 %    \begin{macrocode}
@@ -821,6 +891,8 @@ NianCLS, 年文檔類
 \clist_pop:NN \l_tmpa_clist \l_tmpa_tl
 \clist_pop:NN \l_tmpa_clist \l_tmpb_tl
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 頁面方向 |=>
 % \subsubsection{頁面方向}
 % 处理页面方向选项。
 %    \begin{macrocode}
@@ -838,6 +910,8 @@ NianCLS, 年文檔類
       { \tl_use:N \l_tmpa_tl }
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 輔助線判定 |=>
 % \subsubsection{輔助線判定}
 % 辅助线设置。有些肮脏？
 %    \begin{macrocode}
@@ -868,6 +942,8 @@ NianCLS, 年文檔類
       }
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 完成設置 |=>
 % \subsubsection{完成設置}
 % 完成纸张给配置。注意其中以及混入了一些奇怪的辅助线用判断，以及为与其它一些可能会操作页面的神奇的宏集兼容，会尝试统一某些长度。
 %    \begin{macrocode}
@@ -888,6 +964,8 @@ NianCLS, 年文檔類
   { \dim_use:N \l_tmpa_dim }
   { \dim_use:N \l_tmpb_dim }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 清除內存 |=>
 % \subsubsection{清除內存}
 % 并做好内存管理。
 %    \begin{macrocode}
@@ -903,23 +981,35 @@ NianCLS, 年文檔類
 % \@@_macro_release:N \l_@@_paper_widthaux_tl
 % \@@_macro_release:N \l_@@_paper_heightaux_tl
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%%% ^^X <=|
+%%%%% ^^X 字體矩陣配置 |=>
 % \subsection{字體矩陣配置}
+%%%% ^^X 全局宏申明 |=>
 % \subsubsection{全局宏申明}
 % 全局逗号列表申明。
 %    \begin{macrocode}
 \clist_new:N \l_@@_jfm_feats_clist
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 主要 |=>
 % \subsubsection{主要}
 % 其定义及作用域分散于后二节中，此章仅为占位。初始化其。
 %    \begin{macrocode}
 \clist_set:Nn \l_@@_jfm_feats_clist { nstd }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 內存管理 |=>
 % \subsubsection{內存管理}
 % 于最后清除之。
 %    \begin{macrocode}
 \@@_macro_release:N \l_@@_jfm_feats_clist
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%%% ^^X <=|
+%%%%% ^^X 選項設定 |=>
 % \subsection{選項設定}
+%%%% ^^X 組版方向設定 |=>
 % \subsubsection{組版方向設定}
 % 支持纵排组版，使用钩子进行处理。
 %    \begin{macrocode}
@@ -928,7 +1018,7 @@ NianCLS, 年文檔類
     \RequirePackage { lltjext } \tate
     \@@_at_doc_beg:n
       {
-        \iow_trem:n {《縦組モード》} \adjustbaseline
+        \iow_term:n {《縦組モード》} \adjustbaseline
       }
   }
 %    \end{macrocode}
@@ -937,6 +1027,8 @@ NianCLS, 年文檔類
 % \bool_if:NT \l_@@_layout_tate_bool
 %   { \clist_put_left:Nn \l_@@_jfm_feats_clist { vert } }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 單雙欄設定 |=>
 % \subsubsection{單雙欄設定}
 % 设置{\LaTeXe}内核中的单双栏开关。
 %    \begin{macrocode}
@@ -944,22 +1036,32 @@ NianCLS, 年文檔類
   { \legacy_if_set_true:n { @twocolumn } }
   { \legacy_if_set_false:n { @twocolumn } }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 單雙面設定 |=>
 % \subsubsection{單雙面設定}
 % 同样，也是直接设置内核开关即可。唯一不同的就是有两个需要设置：一个浮动标题、一个边距。
 %    \begin{macrocode}
 \bool_if:NTF \l_@@_layout_twoside_bool
   { \legacy_if_set_true:n { @twoside } }
   { \legacy_if_set_false:n { @twoside } }
-\bool_if:NTF \l_@@_layout_mparswitch
+\bool_if:NTF \l_@@_layout_mparswitch_bool
   { \legacy_if_set_true:n { @mparswitch } }
   { \legacy_if_set_false:n { @mparswitch } }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 標題頁設定 |=>
 % \subsubsection{標題頁設定}
 % 留空。待字体设置完成后再行设定。
+%%%% ^^X <=|
+%%%% ^^X 章節起設定 |=>
 % \subsubsection{章節起設定}
 % 留空。理由同上。
+%%%% ^^X <=|
+%%%% ^^X 編譯模式設定 |=>
 % \subsubsection{編譯模式設定}
 % 已经设置好了，直接设置的{\TeX}的标尺长度。
+%%%% ^^X <=|
+%%%% ^^X 數學公式設定 |=>
 % \subsubsection{數學公式設定}
 % 仍旧是两部分，对齐和编号样式。我在{\LaTeX3}的指北上着到\verb|\file_input:n|，
 % 结果没找到{\TeX}hackers note说这等同于元语\verb|\input|。然后我就去翻实现，
@@ -970,6 +1072,8 @@ NianCLS, 年文檔類
 \bool_if:NT \l_@@_layout_leqno_bool
   { \file_input:n { leqno.clo } }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 「開明」參考文獻設定 |=>
 % \subsubsection{「開明」參考文獻設定}
 % 一点都不开明的open bib设定。用封装的\verb|\AtEndClass|钩子定义（因为后面会先让它为空）。（总觉得这种风格不行，随随便便就12格缩进了。）
 %    \begin{macrocode}
@@ -988,6 +1092,8 @@ NianCLS, 年文檔類
       }
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 內存管理 |=>
 % \subsubsection{內存管理}
 % 清除不必要的宏。
 %    \begin{macrocode}
@@ -1006,12 +1112,18 @@ NianCLS, 年文檔類
 \@@_macro_release:N \l_@@_layout_leqno_bool
 \@@_macro_release:N \l_@@_layout_openbib_bool
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%%% ^^X <=|
+%%%%% ^^X 字體相關配置 |=>
 % \subsection{字體相關配置}
+%%%% ^^X 全局宏申明 |=>
 % \subsubsection{全局宏申明}
 % 申明OpenType字体特性的字列表。
 %    \begin{macrocode}
 \tl_new:N \l_@@_font_langfeat_tl
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 主要設定 |=>
 % \subsubsection{主要設定}
 % 对各语言分别设置字体矩阵特性及OpenType字体特性。
 %    \begin{macrocode}
@@ -1031,6 +1143,8 @@ NianCLS, 年文檔類
     \tl_set:Nn \l_@@_font_langfeat_tl { Japanese }
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 字體矩陣高級設置 |=>
 % \subsubsection{字體矩陣高級設置}
 % 设置字体矩阵的标点高级特性。
 %    \begin{macrocode}
@@ -1039,6 +1153,8 @@ NianCLS, 年文檔類
 \bool_if:NT \l_@@_jfm_linegap_bool
   { \clist_put_left:Nn \l_@@_jfm_feats_clist { lgp } }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 載入中日文支持宏集 |=>
 % \subsubsection{載入中日文支持宏集}
 % 载入\textsf{\LuaTeX-ja}宏集。准备好预定义。
 %    \begin{macrocode}
@@ -1060,6 +1176,8 @@ NianCLS, 年文檔類
     priority = true
   ]
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 補正用單位 |=>
 % \subsubsection{補正用單位}
 % 设置补正用point单位，依据缩放率。
 %    \begin{macrocode}
@@ -1083,6 +1201,8 @@ NianCLS, 年文檔類
   { \mpt } > { 1.200 \p@ }
   { \tl_set:Nn \@ptsize { -20 } }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 視覺字號補正 |=>
 % \subsubsection{視覺字號補正}
 % 对是否补正时统一单位\verb|\mpt|进行处理，而当字号本就无需\verb|\mag|时使补正失效。
 %    \begin{macrocode}
@@ -1157,6 +1277,8 @@ NianCLS, 年文檔類
   }
 %    \end{macrocode}
 % NFSS魔改结束，注意其内部宏的局部及全局命名空间。此部分不进行优化。
+%%%% ^^X <=|
+%%%% ^^X 回滾字體可選特性 |=>
 % \subsubsection{回滾字體可選特性}
 % 处理前面键对值取到的用户设定。有对是否激活的判断。
 %    \begin{macrocode}
@@ -1175,6 +1297,8 @@ NianCLS, 年文檔類
     \group_end:
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 中日NFSS設定 |=>
 % \subsubsection{中日NFSS設定}
 % 参考『视觉字号补正』一节。
 %    \begin{macrocode}
@@ -1190,17 +1314,17 @@ NianCLS, 年文檔類
           {
             <-> s * [ \tl_use:N \l_@@_font_cjscale_tl ] #3 :
             - kern ; script = cjk ; language = \tl_use:N \l_@@_font_langfeat_tl ;
-            jfm = { eva / { \clist_use:Nn \l_@@_jfm_feats_clist { , } #4 } } ;
+            jfm = eva / { \clist_use:Nn \l_@@_jfm_feats_clist { , } #4 } ;
             fallback = nclsfallback
-          }
+					} { }
       }
       {
         \DeclareFontShape { #1 } { #2 } { m } { n }
           {
             <-> s * [ \tl_use:N \l_@@_font_cjscale_tl ] #3 :
             - kern ; script = cjk ; language = \tl_use:N \l_@@_font_langfeat_tl ;
-            jfm = { eva / { \clist_use:Nn \l_@@_jfm_feats_clist { , } #4 } }
-          }
+            jfm = eva / { \clist_use:Nn \l_@@_jfm_feats_clist { , } #4 }
+					} { }
       }
   }
 %    \end{macrocode}
@@ -1229,6 +1353,8 @@ NianCLS, 年文檔類
       }
   }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 字體尺寸及連結參數 |=>
 % \subsubsection{字體尺寸及連結參數}
 % 首先重定义内核中的\verb|\@setfontsize|宏，支持中日文的某些特殊要求。
 % 因为\verb|\ltjset(x)kanjiskip|不需要花括号，所以说\verb|\exp_args|系列的宏我还是没法用的，真可惜。（太细了也不好）
@@ -1259,6 +1385,81 @@ NianCLS, 年文檔類
 \cs_new:Nn \@@_font_setsize:nnn
   { \@setfontsize #1 { #2 \mpt } { #3 \mpt } }
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 行距設定 |=>
+% \subsubsection{行距設定}
+% 两种行距设定，适应于西文／中日文组版。因为用户也能手动指定行距设定，故我们用遗产。
+%    \begin{macrocode}
+\newif \ifnarrowbaselines
+\cs_new:Nn \@@_baseline_narrow:
+  {
+    \ExplSyntaxOn
+    \legacy_if_set_true:n { narrowbaselines }
+    \skip_new:N \l_@@_abovedisplay_temp_skip
+    \skip_new:N \l_@@_abovedisplayshort_temp_skip
+    \skip_new:N \l_@@_belowdisplay_temp_skip
+    \skip_new:N \l_@@_belowdisplayshort_temp_skip
+    \skip_set_eq:NN \l_@@_abovedisplay_temp_skip \abovedisplayskip
+    \skip_set_eq:NN \l_@@_abovedisplayshort_temp_skip \abovedisplayshortskip
+    \skip_set_eq:NN \l_@@_belowdisplay_temp_skip \belowdisplayskip
+    \skip_set_eq:NN \l_@@_belowdisplayshort_temp_skip \belowdisplayshortskip
+    \@currsize \selectfont
+    \skip_set_eq:NN \abovedisplayskip \l_@@_abovedisplay_temp_skip
+    \skip_set_eq:NN \abovedisplayshortskip \l_@@_abovedisplayshort_temp_skip
+    \skip_set_eq:NN \belowdisplayskip \l_@@_belowdisplay_temp_skip
+    \skip_set_eq:NN \belowdisplayshortskip \l_@@_belowdisplayshort_temp_skip
+    \ExplSyntaxOff
+  }
+\cs_new:Nn \@@_baseline_wide:
+  {
+    \ExplSyntaxOn
+    \legacy_if_set_false:n { narrowbaselines }
+    \@currsize \selectfont
+    \ExplSyntaxOff
+  }
+%    \end{macrocode}
+% 然后是激活判断用的宏。
+%    \begin{macrocode}
+\cs_new:Npn \@@_baseline_ifnarrow:nn
+  {
+    \legacy_if:nTF { narrowbaselines }
+		  { \use_i:nn }
+     	{ \use_ii:nn }
+  }
+%    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 字體尺寸 |=>
+% \subsubsection{字體尺寸設置}
+% 终于可以设置重要的字号及行距等相关信息了。首先是正常尺寸（10pt）。因为我们的引擎她不支持mag，所以都是用标准尺寸缩放出来的，也就在这里可以省一点事：全局使用标准尺寸了。根据ltjs文档类，公称10分的（中）日文字体约为9.25分（也就是ASCII的0.961倍），所以设置16分的行间距相当宽松；同时16比上9.25大概是1.73，也比较接近传统「二分四分」的约定。顺便，这里就直接用expl3的语法了。而且，都用expl3了，尺寸就直接写了。
+%    \begin{macrocode}
+\cs_set:Npn \normalsize
+	{
+    \@@_baseline_ifnarrow:nn
+		  { \@@_font_setsize:nnn { \normalsize } { 10 pt } { 12 pt } }
+			{ \@@_font_setsize:nnn { \normalsize } { 10 pt } { 16 pt } }
+    \skip_set:Nn \abovedisplayskip { 11 \mpt~plus 3\mpt~minus 4\mpt } % FIXME
+    \skip_set:Nn \abovedisplayshortskip { 0 \mpt~plus 3\mpt } % FIXME
+		\skip_set:Nn \belowdisplayskip { 9 \mpt~plus 3\mpt~4\mpt } % FIXME
+		\skip_set:Nn \belowdisplayshortskip { 0 \mpt~plus 3 \mpt } % FIXME
+		\cs_new_eq:NN \@listi \@listI
+	}
+%    \end{macrocode}
+% 然后先初始化字体，然后找一个字测字框数据。
+%    \begin{macrocode}
+\mcfamily \selectfont \normalsize
+\hbox_set:Nn \l_tmpa_box { 年 }
+\dim_new:N \Cht
+\dim_new:N \Cdp
+\dim_new:N \Cwd
+\dim_new:N \Cvs
+\dim_new:N \Chs
+\dim_set:Nn \Cht { \box_ht:N \l_tmpa_box }
+\dim_set:Nn \Cdp { \box_dp:N \l_tmpa_box }
+\dim_set:Nn \Cwd { \box_wd:N \l_tmpa_box }
+\dim_set:Nn \Cvs { \baselineskip }
+%    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 清理內存 |=>
 % \subsubsection{清理內存}
 % 内存管理。清除不必要的宏定义。
 %    \begin{macrocode}
@@ -1278,9 +1479,14 @@ NianCLS, 年文檔類
 \@@_macro_release:N \@@_font_declareshape:nnnn
 % \@@_macro_release:N \@@_font_setsize:nnn
 %    \end{macrocode}
+%%%% ^^X <=|
+%%%%% ^^X <=|
+%%%%%% ^^X <=|
+%%%%%% ^^X 退場 |=>
 % \section{退場}
 % 以上。
 %    \begin{macrocode}
-\endinput
+\relax \endinput
 %    \end{macrocode}
+%%%%%% ^^X <=|
 \endinput

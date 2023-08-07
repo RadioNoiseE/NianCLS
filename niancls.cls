@@ -1,15 +1,29 @@
 %%　年文檔類　黄京
+%%%%%% ^^X MetaComment |=>
+%%%%%% ^^X <=|
+%%%%%% ^^X Title |=>
+%%%%%% ^^X <=|
+%%%%%% ^^X Abstract |=>
+%% \begin{abstract}
+%% 为在{\LuaTeX}下排印中日文本而作的文档类。基于{\sffamily expl3}构建。设计初衷不同于ltj／bxjs系列，不考虑对旧版本的支持。
+%% 目标为提供一个灵活的可配置的文档类。支持简中、繁中及日本语。
+%% \end{abstract}
+%%%%%% ^^X <=|
+%%%%%% ^^X TableOfContents |=>
+%%%%%% ^^X <=|
+%%%%%% ^^X 初始化 |=>
+%%%%% ^^X 載入{\LaTeX3}並檢驗依賴 |=>
 \NeedsTeXFormat{LaTeX2e}
 \RequirePackage{expl3}
-\ProvidesExplClass{niancls}{2023-05-20}{1.0.0}{Nian Document Class}
+\ProvidesExplClass{niancls}{2023-08-05}{0.0.0}{Nian Document Class}
 \prop_gput:Nnn \g_msg_module_name_prop { ncls } { niancls }
 \cs_if_exist:NF \NewDocumentCommand
   { \RequirePackage { xparse } }
 \cs_if_exist:NTF \ProcessKeyOptions
-  { \cs_new_protected:Nn \__ncls_keyoptions_process:n { \ProcessKeyOptions { #1 } } }
+{ \cs_new:Nn \__ncls_keyoptions_process:n { \ProcessKeyOptions [ #1 ] } }
   {
     \RequirePackage { l3keys2e }
-    \cs_new_protected:Nn \__ncls_keyoptions_process:n { \ProcessKeysOptions { #1 } }
+    \cs_new:Nn \__ncls_keyoptions_process:n { \ProcessKeysOptions { #1 } }
   }
 \cs_if_exist:NF \AtEndPreamble
   { \RequirePackage { etoolbox } }
@@ -44,6 +58,8 @@
       }
     \msg_fatel:nn { ncls } { unsupported-engine }
   }
+%%%%% ^^X <=|
+%%%%% ^^X 私有定義 |=>
 \cs_new_protected:Npn \__ncls_at_preamble_end:n { \AtEndPreamble }
 \cs_new_protected:Npn \__ncls_at_cls_end:n { \AtEndOfClass }
 \cs_new_protected:Npn \__ncls_at_doc_beg:n { \AtBeginDocument }
@@ -66,6 +82,8 @@
   }
 \dim_new:N \mpt
 \dim_set:Nn \mpt { \p@ }
+%%%%% ^^X <=|
+%%%%% ^^X 內存清理 |=>
 \__ncls_macro_release:N \__ncls_keyoptions_process:n
 \__ncls_macro_release:N \__ncls_at_preamble_end:n
 \__ncls_macro_release:N \__ncls_at_cls_end:n
@@ -73,6 +91,11 @@
 \__ncls_macro_release:N \__ncls_macro_release:N
 \__ncls_macro_release:N \__ncls_luafunc_new:N
 \__ncls_macro_release:N \__ncls_luafunc_use:N
+%%%%% ^^X <=|
+%%%%%% ^^X <=|
+%%%%%% ^^X 鍵對直之「預處理」 |=>
+%%%%% ^^X 紙張配置用 |=>
+%%%% ^^X 尺寸信息 |=>
 \tl_new:N \l__ncls_paper_sizeinfo_tl
 \keys_define:nn { ncls }
   {
@@ -80,6 +103,8 @@
     paper .value_required:n = true,
     peper .initial:n = { a4 }
   }
+%%%% ^^X <=|
+%%%% ^^X 輔助線 |=>
 \bool_new:N \l__ncls_paper_corpmark_mark_bool
 \bool_new:N \l__ncls_paper_corpmark_date_bool
 \keys_define:nn { ncls }
@@ -104,6 +129,8 @@
       },
     corpmark .value_required:n = true
   }
+%%%% ^^X <=|
+%%%% ^^X 頁面方向 |=>
 \bool_new:N \l__ncls_paper_portrait_bool
 \keys_define:nn { ncls }
   {
@@ -120,6 +147,10 @@
     orientation .value_required:n = true,
     orientation .initial:n = { portrait }
   }
+%%%% ^^X <=|
+%%%%% ^^X <=|
+%%%%% ^^X 選項設定 |=>
+%%%% ^^X 組版方向 |=>
 \bool_new:N \l__ncls_layout_tate_bool
 \keys_define:nn { ncls }
   {
@@ -136,6 +167,8 @@
     direction .value_required:n = true,
     direction .initial:n = { yoko }
   }
+%%%% ^^X <=|
+%%%% ^^X 基準語言 |=>
 \bool_new:N \l__ncls_layout_english_bool
 \keys_define:nn { ncls }
   {
@@ -152,6 +185,8 @@
     basis .value_required:n = true,
     basis .initial:n = { cjk }
   }
+%%%% ^^X <=|
+%%%% ^^X 文檔類型 |=>
 \bool_new:N \l__ncls_layout_restonecol_bool
 \bool_new:N \l__ncls_layout_twoside_bool
 \bool_new:N \l__ncls_layout_mparswitch_bool
@@ -192,6 +227,8 @@
     doctype .value_required:n = true,
     doctype .initial:n = { article }
   }
+%%%% ^^X <=|
+%%%% ^^X 分欄 |=>
 \keys_define:nn { ncls }
   {
     column .choice:,
@@ -214,6 +251,8 @@
     column_gap .value_required:n = true,
     column_gap .initial:n = { 2 \zw }
   }
+%%%% ^^X <=|
+%%%% ^^X 單雙面 |=>
 \keys_define:nn { ncls }
   {
     print .choice:,
@@ -241,11 +280,15 @@
       },
     print .value_required:n = true
   }
+%%%% ^^X <=|
+%%%% ^^X 標題頁 |=>
 \keys_define:nn { ncls }
   {
     titlepage .bool_set:N = \l__ncls_layout_titlepage_bool,
     titlepage .value_required:n = true
   }
+%%%% ^^X <=|
+%%%% ^^X 章節起 |=>
 \keys_define:nn { ncls }
   {
     open .choice:,
@@ -273,6 +316,8 @@
       },
     open .value_required:n = true
   }
+%%%% ^^X <=|
+%%%% ^^X 編譯模式 |=>
 \bool_new:N \l__ncls_layout_draft_bool
 \keys_define:nn { ncls }
   {
@@ -297,6 +342,8 @@
     version .value_required:n = true,
     version .initial:n = { final }
   }
+%%%% ^^X <=|
+%%%% ^^X 數學公式 |=>
 \bool_new:N \l__ncls_layout_fleqn_bool
 \keys_define:nn { ncls }
   {
@@ -308,10 +355,10 @@
         \msg_error:nnxxx { ncls } { unknown-choice }
           { eqalign }
           { left,~middle }
-          { \exp_not:n { #1 }
+{ \exp_not:n { #1 } }
       },
-    eqalign / value_required:n = true,
-    eqalign / initial:n = { middle }
+    eqalign .value_required:n = true,
+    eqalign .initial:n = { middle }
   }
 \bool_new:N \l__ncls_layout_leqno_bool
 \keys_define:nn { ncls }
@@ -324,11 +371,13 @@
         \msg_error:nnxxx { ncls } { unknown-choice }
           { eqnum }
           { left,~right }
-          { \exp_not:n { #1 }
+{ \exp_not:n { #1 } }
       },
     eqnum .value_required:n = true,
     eqnum .initial:n = { right }
   }
+%%%% ^^X <=|
+%%%% ^^X 參考文獻式樣設定 |=>
 \bool_new:N \l__ncls_layout_openbib_bool
 \keys_define:nn { ncls }
   {
@@ -342,9 +391,15 @@
           { open,~plain }
           { \exp_not:n { #1 } }
       },
-    bibstyle .value_required:n = ture,
+    bibstyle .value_required:n = true,
     bibstyle .initial:n = { plain }
   }
+%%%% ^^X <=|
+%%%% ^^X 依存係設定缺省給 |=>
+%%%% ^^X <=|
+%%%%% ^^X <=|
+%%%%% ^^X 字體相關配置用 |=>
+%%%% ^^X 全局基準字體參數設定 |=>
 \tl_new:N \l__ncls_font_magscale_tl
 \keys_define:nn { ncls }
   {
@@ -380,6 +435,8 @@
     fontsize .value_required:n = true,
     fontsize .initial:n = { 10pt }
   }
+%%%% ^^X <=|
+%%%% ^^X 語言設定 |=>
 \str_new:N \l__ncls_lang_cj_str
 \keys_define:nn { ncls }
   {
@@ -397,6 +454,8 @@
     language .value_required:n = true,
     language .initial:n = { jp }
   }
+%%%% ^^X <=|
+%%%% ^^X 字體設定 |=>
 \tl_new:N \l__ncls_font_mincho_tl
 \tl_new:N \l__ncls_font_gothic_tl
 \keys_define:nn { ncls }
@@ -408,6 +467,8 @@
     mincho .initial:n = { HaranoAji Mincho },
     gothic .initial:n = { HaranoAji Gothic }
   }
+%%%% ^^X <=|
+%%%% ^^X 字間距 |=>
 \tl_new:N \l__ncls_font_kanjiskip_tl
 \keys_define:nn { ncls }
   {
@@ -422,6 +483,8 @@
     xkanjiskip .value_required:n = true,
     xkanjiskip .initial:n = .25em \@plus .15em \@minus .06em
   }
+%%%% ^^X <=|
+%%%% ^^X 字體縮放率設定 |=>
 \tl_new:N \l__ncls_font_cjscale_tl
 \keys_define:nn { ncls }
   {
@@ -429,6 +492,8 @@
     scale .value_required:n = true,
     scale .initial:n = { 0.924715 }
   }
+%%%% ^^X <=|
+%%%% ^^X 字體矩陣高級設定 |=>
 \bool_new:N \l__ncls_jfm_hanging_bool
 \bool_new:N \l__ncls_jfm_linegap_bool
 \keys_define:nn { ncls }
@@ -438,6 +503,8 @@
     punct / linegap .code:n = { \bool_set_true:N \l__ncls_jfm_linegap_bool },
     punct .value_required:n = true
   }
+%%%% ^^X <=|
+%%%% ^^X 視覺字號補正 |=>
 \bool_new:N \l__ncls_font_xreal_bool
 \keys_define:nn { ncls }
   {
@@ -447,6 +514,8 @@
     magstyle .value_required:n = true,
     magstyle .initial:n = { xreal }
   }
+%%%% ^^X <=|
+%%%% ^^X 回滾字體特性 |=>
 \bool_new:N \l__ncls_font_fallback_bool
 \tl_new:N \l__ncls_font_fallback_tl
 \keys_define:nn { ncls }
@@ -458,15 +527,31 @@
       },
     fallback .value_required:n = true
   }
+%%%% ^^X <=|
+%%%%% ^^X <=|
+%%%%% ^^X 初始化處理 |=>
 \__ncls_keyoptions_process:n { ncls }
-\prop_new:N \g__ncls_paper_sizelist_prop
-\clist_new:N \g__ncls_paper_sizeconf_clist
+%%%%% ^^X <=|
+%%%%% ^^X 衝突檢測 |=>
+%%%% ^^X 選項設置 |=>
+%%%% ^^X <=|
+%%%%% ^^X <=|
+%%%%%% ^^X <=|
+%%%%%% ^^X 主要特性 |=>
+%%%%% ^^X 紙張尺寸配置 |=>
+%%%% ^^X 全局宏申明 |=>
+\prop_new:N \l__ncls_paper_sizelist_prop
+\clist_new:N \l__ncls_paper_sizeconf_clist
+%%%% ^^X <=|
+%%%% ^^X 主要功能宏 |=>
 \cs_new:Nn \__ncls_paper_addsize:nnn
   {
-    \prop_gput_if_new:Nnn \g__ncls_paper_sizelist_prop
+    \prop_put_if_new:Nnn \l__ncls_paper_sizelist_prop
       { #1 }
-      { #2 , #3 }
+{ #2 , #3 }
   }
+%%%% ^^X <=|
+%%%% ^^X 尺寸參數設定 |=>
 \__ncls_paper_addsize:nnn { a0  } {  841 mm } { 1189 mm }
 \__ncls_paper_addsize:nnn { a1  } {  594 mm } {  841 mm }
 \__ncls_paper_addsize:nnn { a2  } {  420 mm } {  594 mm }
@@ -496,17 +581,17 @@
 \__ncls_paper_addsize:nnn { b5j } {  182 mm } {  257 mm }
 \__ncls_paper_addsize:nnn { b6j } {  128 mm } {  182 mm }
 \__ncls_paper_addsize:nnn { screen } { 225 mm } { 180 mm }
-\prop_if_in:NoT \g__ncls_paper_sizelist_prop
-  { \tl_to_str:N \l__ncls_paper_sizeinfo_tl }
-  {
-    \prop_get:NoN \g__ncls_paper_sizelist_prop
-      { \tl_to_str:N \l__ncls_paper_sizeinfo_tl }
-      \l__ncls_paper_sizeinfo_tl
-  }
+%%%% ^^X <=|
+%%%% ^^X 內部參數處理 |=>
+\prop_get:NoN \l__ncls_paper_sizelist_prop
+  { \l__ncls_paper_sizeinfo_tl }
+  \l__ncls_paper_sizeinfo_tl
 \clist_set:No \l_tmpa_clist
   { \l__ncls_paper_sizeinfo_tl }
 \clist_pop:NN \l_tmpa_clist \l_tmpa_tl
 \clist_pop:NN \l_tmpa_clist \l_tmpb_tl
+%%%% ^^X <=|
+%%%% ^^X 頁面方向 |=>
 \bool_if:NTF \l__ncls_paper_portrait_bool
   {
     \dim_set:Nn \l_tmpa_dim
@@ -520,6 +605,8 @@
     \dim_set:Nn \l_tmpb_dim
       { \tl_use:N \l_tmpa_tl }
   }
+%%%% ^^X <=|
+%%%% ^^X 輔助線判定 |=>
 \bool_if:NT \l__ncls_paper_corpmark_mark_bool
   {
     \legacy_if_set_true:n { tombow }
@@ -546,6 +633,8 @@
         \maketombowbox
       }
   }
+%%%% ^^X <=|
+%%%% ^^X 完成設置 |=>
 \dim_set:Nn { \paperwidth } \l_tmpa_dim
 \dim_set:Nn { \paperheight } \l_tmpb_dim
 \bool_if:NT \l__ncls_paper_corpmark_mark_bool
@@ -562,36 +651,64 @@
 \pdf_pagesize_gset:nn
   { \dim_use:N \l_tmpa_dim }
   { \dim_use:N \l_tmpb_dim }
+%%%% ^^X <=|
+%%%% ^^X 清除內存 |=>
 \__ncls_macro_release:N \__ncls_paper_addsize:nnn
 \__ncls_macro_release:N \g__ncls_paper_sizelist_prop
 \__ncls_macro_release:N \l__ncls_paper_sizeinfo_tl
 \__ncls_macro_release:N \l__ncls_paper_corpmark_mark_bool
 \__ncls_macro_release:N \l__ncls_paper_corpmark_date_bool
 \__ncls_macro_release:N \l__ncls_paper_portrait_bool
+%%%% ^^X <=|
+%%%%% ^^X <=|
+%%%%% ^^X 字體矩陣配置 |=>
+%%%% ^^X 全局宏申明 |=>
 \clist_new:N \l__ncls_jfm_feats_clist
+%%%% ^^X <=|
+%%%% ^^X 主要 |=>
 \clist_set:Nn \l__ncls_jfm_feats_clist { nstd }
+%%%% ^^X <=|
+%%%% ^^X 內存管理 |=>
 \__ncls_macro_release:N \l__ncls_jfm_feats_clist
+%%%% ^^X <=|
+%%%%% ^^X <=|
+%%%%% ^^X 選項設定 |=>
+%%%% ^^X 組版方向設定 |=>
 \bool_if:NT \l__ncls_layout_tate_bool
   {
     \RequirePackage { lltjext } \tate
     \__ncls_at_doc_beg:n
       {
-        \iow_trem:n {《縦組モード》} \adjustbaseline
+        \iow_term:n {《縦組モード》} \adjustbaseline
       }
   }
+%%%% ^^X <=|
+%%%% ^^X 單雙欄設定 |=>
 \bool_if:NTF \l__ncls_layout_restonecol_bool
   { \legacy_if_set_true:n { @twocolumn } }
   { \legacy_if_set_false:n { @twocolumn } }
+%%%% ^^X <=|
+%%%% ^^X 單雙面設定 |=>
 \bool_if:NTF \l__ncls_layout_twoside_bool
   { \legacy_if_set_true:n { @twoside } }
   { \legacy_if_set_false:n { @twoside } }
-\bool_if:NTF \l__ncls_layout_mparswitch
+\bool_if:NTF \l__ncls_layout_mparswitch_bool
   { \legacy_if_set_true:n { @mparswitch } }
   { \legacy_if_set_false:n { @mparswitch } }
+%%%% ^^X <=|
+%%%% ^^X 標題頁設定 |=>
+%%%% ^^X <=|
+%%%% ^^X 章節起設定 |=>
+%%%% ^^X <=|
+%%%% ^^X 編譯模式設定 |=>
+%%%% ^^X <=|
+%%%% ^^X 數學公式設定 |=>
 \bool_if:NT \l__ncls_layout_fleqn_bool
   { \file_input:n { fleqn.clo } }
 \bool_if:NT \l__ncls_layout_leqno_bool
   { \file_input:n { leqno.clo } }
+%%%% ^^X <=|
+%%%% ^^X 「開明」參考文獻設定 |=>
 \bool_if:NT \l__ncls_layout_openbib_bool
   {
     \__ncls_at_doc_beg:n
@@ -606,6 +723,8 @@
         \cs_set_nopar:Nn \newblock { \par }
       }
   }
+%%%% ^^X <=|
+%%%% ^^X 內存管理 |=>
 \__ncls_macro_release:N \l__ncls_layout_tate_bool
 \__ncls_macro_release:N \l__ncls_layout_restonecol_bool
 \__ncls_macro_release:N \l__ncls_layout_column_gap_tl
@@ -619,7 +738,13 @@
 \__ncls_macro_release:N \l__ncls_layout_fleqn_bool
 \__ncls_macro_release:N \l__ncls_layout_leqno_bool
 \__ncls_macro_release:N \l__ncls_layout_openbib_bool
+%%%% ^^X <=|
+%%%%% ^^X <=|
+%%%%% ^^X 字體相關配置 |=>
+%%%% ^^X 全局宏申明 |=>
 \tl_new:N \l__ncls_font_langfeat_tl
+%%%% ^^X <=|
+%%%% ^^X 主要設定 |=>
 \str_if_eq:VnT \l__ncls_lang_cj_str { t }
   {
     \clist_put_left:Nn \l__ncls_jfm_feats_clist { trad }
@@ -635,10 +760,14 @@
     \clist_put_left:Nn \l__ncls_jfm_feats_clist { jp }
     \tl_set:Nn \l__ncls_font_langfeat_tl { Japanese }
   }
+%%%% ^^X <=|
+%%%% ^^X 字體矩陣高級設置 |=>
 \bool_if:NT \l__ncls_jfm_hanging_bool
   { \clist_put_left:Nn \l__ncls_jfm_feats_clist { hgp } }
 \bool_if:NT \l__ncls_jfm_linegap_bool
   { \clist_put_left:Nn \l__ncls_jfm_feats_clist { lgp } }
+%%%% ^^X <=|
+%%%% ^^X 載入中日文支持宏集 |=>
 \tl_set:Nx \Cjascale { \tl_use:N \l__ncls_font_cjscale_tl }
 \tl_set:Nx \ltj@stdmcfont { \tl_use:N \l__ncls_font_mincho_tl }
 \tl_set:Nx \ltj@stdgtfont { \tl_use:N \l__ncls_font_gothic_tl }
@@ -653,6 +782,8 @@
     lineend = extended,
     priority = true
   ]
+%%%% ^^X <=|
+%%%% ^^X 補正用單位 |=>
 \dim_set:Nn \mpt { \l__ncls_font_magscale_tl \p@ }
 \dim_compare:nNnT
   { \mpt } < { 1 \p@ }
@@ -669,6 +800,8 @@
 \dim_compare:nNnT
   { \mpt } > { 1.200 \p@ }
   { \tl_set:Nn \@ptsize { -20 } }
+%%%% ^^X <=|
+%%%% ^^X 視覺字號補正 |=>
 \bool_if:NTF \l__ncls_font_xreal_bool
   {
     \dim_compare:nNnT
@@ -734,6 +867,8 @@
           \tl_use:N \l_tmpa_tl
         }
   }
+%%%% ^^X <=|
+%%%% ^^X 回滾字體可選特性 |=>
 \bool_if:NT \l__ncls_font_fallback_bool
   {
     \group_begin:
@@ -748,6 +883,8 @@
         }
     \group_end:
   }
+%%%% ^^X <=|
+%%%% ^^X 中日NFSS設定 |=>
 \exp_after:wN \cs_set_eq:NN \cs:w JY3/mc/m/n/10 \cs_end: \scan_stop:
 \cs_new:Nn \__ncls_font_declareshape:nnnn
   {
@@ -757,17 +894,17 @@
           {
             <-> s * [ \tl_use:N \l__ncls_font_cjscale_tl ] #3 :
             - kern ; script = cjk ; language = \tl_use:N \l__ncls_font_langfeat_tl ;
-            jfm = { eva / { \clist_use:Nn \l__ncls_jfm_feats_clist { , } #4 } } ;
+            jfm = eva / { \clist_use:Nn \l__ncls_jfm_feats_clist { , } #4 } ;
             fallback = nclsfallback
-          }
+					} { }
       }
       {
         \DeclareFontShape { #1 } { #2 } { m } { n }
           {
             <-> s * [ \tl_use:N \l__ncls_font_cjscale_tl ] #3 :
             - kern ; script = cjk ; language = \tl_use:N \l__ncls_font_langfeat_tl ;
-            jfm = { eva / { \clist_use:Nn \l__ncls_jfm_feats_clist { , } #4 } }
-          }
+            jfm = eva / { \clist_use:Nn \l__ncls_jfm_feats_clist { , } #4 }
+					} { }
       }
   }
 \__ncls_font_declareshape:nnnn { JY3 } { mc } { \tl_use:N \l__ncls_font_mincho_tl } { }
@@ -789,6 +926,8 @@
           { \DeclareFontShape { #1 } { mc } { ####1 } { ##1 } { <-> ssub * gt/m/n } { } }
       }
   }
+%%%% ^^X <=|
+%%%% ^^X 字體尺寸及連結參數 |=>
 \cs_set:Npn \@setfontsize #1 #2 #3
   {
     \ExplSyntaxOn
@@ -811,6 +950,67 @@
   }
 \cs_new:Nn \__ncls_font_setsize:nnn
   { \@setfontsize #1 { #2 \mpt } { #3 \mpt } }
+%%%% ^^X <=|
+%%%% ^^X 行距設定 |=>
+\newif \ifnarrowbaselines
+\cs_new:Nn \__ncls_baseline_narrow:
+  {
+    \ExplSyntaxOn
+    \legacy_if_set_true:n { narrowbaselines }
+    \skip_new:N \l__ncls_abovedisplay_temp_skip
+    \skip_new:N \l__ncls_abovedisplayshort_temp_skip
+    \skip_new:N \l__ncls_belowdisplay_temp_skip
+    \skip_new:N \l__ncls_belowdisplayshort_temp_skip
+    \skip_set_eq:NN \l__ncls_abovedisplay_temp_skip \abovedisplayskip
+    \skip_set_eq:NN \l__ncls_abovedisplayshort_temp_skip \abovedisplayshortskip
+    \skip_set_eq:NN \l__ncls_belowdisplay_temp_skip \belowdisplayskip
+    \skip_set_eq:NN \l__ncls_belowdisplayshort_temp_skip \belowdisplayshortskip
+    \@currsize \selectfont
+    \skip_set_eq:NN \abovedisplayskip \l__ncls_abovedisplay_temp_skip
+    \skip_set_eq:NN \abovedisplayshortskip \l__ncls_abovedisplayshort_temp_skip
+    \skip_set_eq:NN \belowdisplayskip \l__ncls_belowdisplay_temp_skip
+    \skip_set_eq:NN \belowdisplayshortskip \l__ncls_belowdisplayshort_temp_skip
+    \ExplSyntaxOff
+  }
+\cs_new:Nn \__ncls_baseline_wide:
+  {
+    \ExplSyntaxOn
+    \legacy_if_set_false:n { narrowbaselines }
+    \@currsize \selectfont
+    \ExplSyntaxOff
+  }
+\cs_new:Npn \__ncls_baseline_ifnarrow:nn
+  {
+    \legacy_if:nTF { narrowbaselines }
+  { \use_i:nn }
+      { \use_ii:nn }
+  }
+%%%% ^^X <=|
+%%%% ^^X 字體尺寸 |=>
+\cs_set:Npn \normalsize
+{
+    \__ncls_baseline_ifnarrow:nn
+  { \__ncls_font_setsize:nnn { \normalsize } { 10 pt } { 12 pt } }
+{ \__ncls_font_setsize:nnn { \normalsize } { 10 pt } { 16 pt } }
+    \skip_set:Nn \abovedisplayskip { 11 \mpt~plus 3\mpt~minus 4\mpt } % FIXME
+    \skip_set:Nn \abovedisplayshortskip { 0 \mpt~plus 3\mpt } % FIXME
+\skip_set:Nn \belowdisplayskip { 9 \mpt~plus 3\mpt~4\mpt } % FIXME
+\skip_set:Nn \belowdisplayshortskip { 0 \mpt~plus 3 \mpt } % FIXME
+\cs_new_eq:NN \@listi \@listI
+}
+\mcfamily \selectfont \normalsize
+\hbox_set:Nn \l_tmpa_box { 年 }
+\dim_new:N \Cht
+\dim_new:N \Cdp
+\dim_new:N \Cwd
+\dim_new:N \Cvs
+\dim_new:N \Chs
+\dim_set:Nn \Cht { \box_ht:N \l_tmpa_box }
+\dim_set:Nn \Cdp { \box_dp:N \l_tmpa_box }
+\dim_set:Nn \Cwd { \box_wd:N \l_tmpa_box }
+\dim_set:Nn \Cvs { \baselineskip }
+%%%% ^^X <=|
+%%%% ^^X 清理內存 |=>
 \__ncls_macro_release:N \l__ncls_font_magscale_tl
 \__ncls_macro_release:N \l__ncls_lang_cj_str
 \__ncls_macro_release:N \l__ncls_font_langfeat_tl
@@ -823,3 +1023,9 @@
 \__ncls_macro_release:N \l__ncls_font_fallback_bool
 \__ncls_macro_release:N \l__ncls_font_fallback_tl
 \__ncls_macro_release:N \__ncls_font_declareshape:nnnn
+%%%% ^^X <=|
+%%%%% ^^X <=|
+%%%%%% ^^X <=|
+%%%%%% ^^X 退場 |=>
+\relax \endinput
+%%%%%% ^^X <=|

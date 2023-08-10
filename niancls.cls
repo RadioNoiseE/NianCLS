@@ -62,7 +62,13 @@
 %%%%% ^^X 私有定義 |=>
 \cs_new_protected:Npn \__ncls_at_preamble_end:n { \AtEndPreamble }
 \cs_new_protected:Npn \__ncls_at_cls_end:n { \AtEndOfClass }
-\cs_new_protected:Npn \__ncls_at_doc_beg:n { \AtBeginDocument }
+\cs_new_protected:Npn \__ncls_at_doc_begin:n { \AtBeginDocument }
+\newif \ifnpream \npreamtrue
+\__ncls_at_doc_begin:n { \npreamfalse }
+\cs_new:Npn \ContExplOn
+  { \ifnpream \else \ExplSyntaxOn \fi }
+\cs_new:Npn \ContExplOff
+  { \ifnpream \else \ExplSyntaxOff \fi }
 \seq_new:N \g__ncls_aftercls_del_seq
 \cs_new:Nn \__ncls_macro_release:N
   { \seq_gput_right:Nn \g__ncls_aftercls_del_seq { #1 } }
@@ -474,14 +480,14 @@
   {
     kanjiskip .tl_set:N = \l__ncls_font_kanjiskip_tl,
     kanjiskip .value_required:n = true,
-    kanjiskip .initial:n = { \z@ \@plus .1\zw \@minus .01\zw }
+    kanjiskip .initial:n = { \z@~plus .1\zw~minus .01\zw }
   }
 \tl_new:N \l__ncls_font_xkanjiskip_tl
 \keys_define:nn { ncls }
   {
     xkanjiskip .tl_set:N = \l__ncls_font_xkanjiskip_tl,
     xkanjiskip .value_required:n = true,
-    xkanjiskip .initial:n = .25em \@plus .15em \@minus .06em
+    xkanjiskip .initial:n = { .25em~plus .15em~minus .06em }
   }
 %%%% ^^X <=|
 %%%% ^^X 字體縮放率設定 |=>
@@ -677,7 +683,7 @@
 \bool_if:NT \l__ncls_layout_tate_bool
   {
     \RequirePackage { lltjext } \tate
-    \__ncls_at_doc_beg:n
+    \__ncls_at_doc_begin:n
       {
         \iow_term:n {《縦組モード》} \adjustbaseline
       }
@@ -711,7 +717,7 @@
 %%%% ^^X 「開明」參考文獻設定 |=>
 \bool_if:NT \l__ncls_layout_openbib_bool
   {
-    \__ncls_at_doc_beg:n
+    \__ncls_at_doc_begin:n
       {
         \cs_set_nopar:Nn \@openbib@code
           {
@@ -748,17 +754,17 @@
 \str_if_eq:VnT \l__ncls_lang_cj_str { t }
   {
     \clist_put_left:Nn \l__ncls_jfm_feats_clist { trad }
-    \tl_set:Nn \l__ncls_font_langfeat_tl { Chinese~Traditional }
+    \tl_set:Nn \l__ncls_font_langfeat_tl { ZHT }
   }
 \str_if_eq:VnT \l__ncls_lang_cj_str { s }
   {
     \clist_put_left:Nn \l__ncls_jfm_feats_clist { smpl }
-    \tl_set:Nn \l__ncls_font_langfeat_tl { Chinese~Simplified }
+    \tl_set:Nn \l__ncls_font_langfeat_tl { ZHS }
   }
 \str_if_eq:VnT \l__ncls_lang_cj_str { j }
   {
     \clist_put_left:Nn \l__ncls_jfm_feats_clist { jp }
-    \tl_set:Nn \l__ncls_font_langfeat_tl { Japanese }
+    \tl_set:Nn \l__ncls_font_langfeat_tl { JAN }
   }
 %%%% ^^X <=|
 %%%% ^^X 字體矩陣高級設置 |=>
@@ -789,16 +795,16 @@
   { \mpt } < { 1 \p@ }
   { \tl_set:Nn \@ptsize { -20 } }
 \dim_compare:nNnT
-  { \mpt } = { 1\p@ }
+  { \mpt } = { 1 \p@ }
   { \tl_set:Nn \@ptsize { 0 } }
 \dim_compare:nNnT
   { \mpt } = { 1.095 \p@ }
   { \tl_set:Nn \@ptsize { 1 } }
 \dim_compare:nNnT
-  { \mpt } = { 1.200 \p@ }
+  { \mpt } = { 1.2 \p@ }
   { \tl_set:Nn \@ptsize { 2 } }
 \dim_compare:nNnT
-  { \mpt } > { 1.200 \p@ }
+  { \mpt } > { 1.2 \p@ }
   { \tl_set:Nn \@ptsize { -20 } }
 %%%% ^^X <=|
 %%%% ^^X 視覺字號補正 |=>
@@ -825,7 +831,7 @@
             tex.sprint(-2, math.floor(0.5 + mpt * tex.getdimen(luatexbase.registernumber 'dimen@')))
           end
           function luatexja.ncls_unmagnify_fsize(e)
-            local s = luatexja.print_scaled(floor(0.5 + e / mpt * 65536))
+            local s = luatexja.print_scaled(math.floor(0.5 + e / mpt * 65536))
             tex.sprint(-2, (s:match('%.0\$')) and s:sub(1, -3) or s)
           end
         }
@@ -837,9 +843,7 @@
           \tl_if_empty:NTF \l_tmpb_tl
             {
               \tl_set:Nx \l_tmpb_tl
-                {
-                  scaled \lua_now:e { tex.sprint(-2, math.floor(0.5 + \l__ncls_font_magscale_tl * 1000)) }
-                }
+                { scaled \lua_now:e { tex.sprint(-2, math.floor(0.5 + \l__ncls_font_magscale_tl * 1000)) } }
             }
             {
               \dim_set:Nn \dimen@ { \tl_use:N \l_tmpb_tl }
@@ -852,19 +856,19 @@
                 { \tl_use:N \l_tmpa_tl \tl_use:N \l_tmpb_tl }
             }
         }
-      \cs_new_eq:NN \__ncls_get_externalfont_orig: { \get@external@font }
+      \cs_new_eq:NN \__ncls_get_external_font_orig: { \get@external@font }
       \cs_set:Nn \get@external@font
         {
           \tl_set:Nx \f@size
             { \lua_now:e { luatexja.ncls_unmagnify_fsize(\f@size) } }
-          \__ncls_get_externalfont_orig:
+          \__ncls_get_external_font_orig:
           \group_begin:
             \tl_set:Nx \l_tmpa_tl
               { \external@font \tl_use:N \c_space_tl~at \tl_use:N \c_space_tl~at }
             \exp_after:wN \__ncls_magnify_external_font:w \tl_use:N \l_tmpa_tl \q_nil
             \exp_after:wN
           \group_end:
-          \tl_use:N \l_tmpa_tl
+          \iow_term:n { \l_tmpa_tl }
         }
   }
 %%%% ^^X <=|
@@ -930,7 +934,7 @@
 %%%% ^^X 字體尺寸及連結參數 |=>
 \cs_set:Npn \@setfontsize #1 #2 #3
   {
-    \ExplSyntaxOn
+    \ContExplOn
     \cs_if_eq:NNT \protect \@typeset@protect
       { \tl_set:Nn \@currsize { #1 } }
     \fontsize { #2 } { #3 } \selectfont
@@ -943,19 +947,24 @@
           { \dim_set:Nn \parindent { 1 em } }
       }
     \ltj@setpar@global
-    \exp_after:wN \ltjsetkanjiskip \tl_use:N \l__ncls_font_kanjiskip_tl
+     \ltjsetkanjiskip \maxdimen
     \dim_set:Nn \l_tmpa_dim { \ltjgetparameter { xkanjiskip } }
     \dim_compare:nNnT { \l_tmpa_dim } > { \z@ }
-      { \exp_after:wN \ltjsetxkanjiskip \tl_use:N \l__ncls_font_xkanjiskip_tl }
+      {
+        \ltjsetxkanjiskip \maxdimen
+      }
+    \ContExplOff
   }
 \cs_new:Nn \__ncls_font_setsize:nnn
   { \@setfontsize #1 { #2 \mpt } { #3 \mpt } }
 %%%% ^^X <=|
 %%%% ^^X 行距設定 |=>
 \newif \ifnarrowbaselines
+\bool_if:NT \l__ncls_layout_english_bool
+  { \legacy_if_set_true:n { narrowbaselines } }
 \cs_new:Nn \__ncls_baseline_narrow:
   {
-    \ExplSyntaxOn
+    \ContExplOn
     \legacy_if_set_true:n { narrowbaselines }
     \skip_new:N \l__ncls_abovedisplay_temp_skip
     \skip_new:N \l__ncls_abovedisplayshort_temp_skip
@@ -970,41 +979,40 @@
     \skip_set_eq:NN \abovedisplayshortskip \l__ncls_abovedisplayshort_temp_skip
     \skip_set_eq:NN \belowdisplayskip \l__ncls_belowdisplay_temp_skip
     \skip_set_eq:NN \belowdisplayshortskip \l__ncls_belowdisplayshort_temp_skip
-    \ExplSyntaxOff
+    \ContExplOff
   }
 \cs_new:Nn \__ncls_baseline_wide:
   {
-    \ExplSyntaxOn
+    \ContExplOn
     \legacy_if_set_false:n { narrowbaselines }
     \@currsize \selectfont
-    \ExplSyntaxOff
+    \ContExplOff
   }
 \cs_new:Npn \__ncls_baseline_ifnarrow:nn
   {
     \legacy_if:nTF { narrowbaselines }
       { \use_i:nn }
-       { \use_ii:nn }
+      { \use_ii:nn }
   }
 %%%% ^^X <=|
 %%%% ^^X 字體尺寸 |=>
 \cs_set:Npn \normalsize
   {
+    \ContExplOn
     \__ncls_baseline_ifnarrow:nn
-      { \__ncls_font_setsize:nnn { \normalsize } { 10 pt } { 12 pt } }
-      { \__ncls_font_setsize:nnn { \normalsize } { 10 pt } { 16 pt } }
-    \skip_set:Nn \abovedisplayskip { 11 \mpt~plus 3\mpt~minus 4\mpt } % FIXME
-    \skip_set:Nn \abovedisplayshortskip { 0 \mpt~plus 3\mpt } % FIXME
-    \skip_set:Nn \belowdisplayskip { 9 \mpt~plus 3\mpt~4\mpt } % FIXME
-    \skip_set:Nn \belowdisplayshortskip { 0 \mpt~plus 3 \mpt } % FIXME
+      { \__ncls_font_setsize:nnn { \normalsize } { 10 } { 12 } }
+      { \__ncls_font_setsize:nnn { \normalsize } { 10 } { 16 } }
+    \iffalse
+      \skip_set:Nn \abovedisplayskip { 11 \mpt~plus 3\mpt~minus 4\mpt } % FIXME
+      \skip_set:Nn \abovedisplayshortskip { 0 \mpt~plus 3\mpt } % FIXME
+      \skip_set:Nn \belowdisplayskip { 9 \mpt~plus 3\mpt~4\mpt } % FIXME
+      \skip_set:Nn \belowdisplayshortskip { 0 \mpt~plus 3 \mpt } % FIXME
+    \fi
     \cs_new_eq:NN \@listi \@listI
+    \ContExplOff
   }
 \mcfamily \selectfont \normalsize
 \hbox_set:Nn \l_tmpa_box { 年 }
-\dim_new:N \Cht
-\dim_new:N \Cdp
-\dim_new:N \Cwd
-\dim_new:N \Cvs
-\dim_new:N \Chs
 \dim_set:Nn \Cht { \box_ht:N \l_tmpa_box }
 \dim_set:Nn \Cdp { \box_dp:N \l_tmpa_box }
 \dim_set:Nn \Cwd { \box_wd:N \l_tmpa_box }

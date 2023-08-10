@@ -38,8 +38,8 @@ NianCLS, 年文檔類
 %</internal>
 %<*driver>
 \makeatletter
-\def\ltj@stdmcfont{SourceHanSerifSC}
-\def\ltj@stdyokojfm{eva/{smpl,nstd}}
+  \def\ltj@stdmcfont{SourceHanSerifSC}
+  \def\ltj@stdyokojfm{eva/{smpl,nstd}}
 \makeatother
 \documentclass[twoside]{ltjsarticle}
 \usepackage[hidelinks]{hyperref}
@@ -56,12 +56,17 @@ NianCLS, 年文檔類
 \setmonofont{Iosevka Slab}[Scale=0.694,FakeStretch=1.2]
 \def\LuaTeX{Lua\kern-.2ex\TeX}
 \makeatletter
-\def\theCodelineNo{\llap{\reset@font\tiny\sffamily\arabic{CodelineNo}\hskip1pt}}
+  \def\theCodelineNo{\llap{\reset@font\tiny\sffamily\arabic{CodelineNo}\hskip1pt}}
 \makeatother
 \parindent=0pt
+\IndexPrologue{%
+  \section{\indexname}
+  \textit{意大利体的数字表示描述对应索引项的页码；
+    带下划线的数字表示定义对应索引项的代码行号；
+    罗马字体的数字表示使用对应索引项的代码行号。}}
 \begin{document}
-\DocInput{\jobname.dtx}
-\PrintIndex
+  \DocInput{\jobname.dtx}
+  \PrintIndex
 \end{document}
 %</driver>
 % \fi
@@ -161,7 +166,19 @@ NianCLS, 年文檔類
 %    \end{macrocode}
 % 定义\verb|\AtBeginDocument|钩子。
 %    \begin{macrocode}
-\cs_new_protected:Npn \@@_at_doc_beg:n { \AtBeginDocument }
+\cs_new_protected:Npn \@@_at_doc_begin:n { \AtBeginDocument }
+%    \end{macrocode}
+% 定义是否在导言区的状态宏。
+%    \begin{macrocode}
+\newif \ifnpream \npreamtrue
+\@@_at_doc_begin:n { \npreamfalse }
+%    \end{macrocode}
+% 定义视情况是否开启\LaTeX3环境的宏。
+%    \begin{macrocode}
+\cs_new:Npn \ContExplOn
+  { \ifnpream \else \ExplSyntaxOn \fi }
+\cs_new:Npn \ContExplOff
+  { \ifnpream \else \ExplSyntaxOff \fi }
 %    \end{macrocode}
 % 定义用于在读取结束后释放缓存的宏。
 %    \begin{macrocode}
@@ -717,7 +734,7 @@ NianCLS, 年文檔類
   {
     kanjiskip .tl_set:N = \l_@@_font_kanjiskip_tl,
     kanjiskip .value_required:n = true,
-    kanjiskip .initial:n = { \z@ \@plus .1\zw \@minus .01\zw }
+    kanjiskip .initial:n = { \z@~plus .1\zw~minus .01\zw }
   }
 %    \end{macrocode}
 % 随后为西文与汉字间间距的接口。
@@ -727,7 +744,7 @@ NianCLS, 年文檔類
   {
     xkanjiskip .tl_set:N = \l_@@_font_xkanjiskip_tl,
     xkanjiskip .value_required:n = true,
-    xkanjiskip .initial:n = .25em \@plus .15em \@minus .06em
+    xkanjiskip .initial:n = { .25em~plus .15em~minus .06em }
   }
 %    \end{macrocode}
 %%%% ^^X <=|
@@ -1016,7 +1033,7 @@ NianCLS, 年文檔類
 \bool_if:NT \l_@@_layout_tate_bool
   {
     \RequirePackage { lltjext } \tate
-    \@@_at_doc_beg:n
+    \@@_at_doc_begin:n
       {
         \iow_term:n {《縦組モード》} \adjustbaseline
       }
@@ -1079,7 +1096,7 @@ NianCLS, 年文檔類
 %    \begin{macrocode}
 \bool_if:NT \l_@@_layout_openbib_bool
   {
-    \@@_at_doc_beg:n
+    \@@_at_doc_begin:n
       {
         \cs_set_nopar:Nn \@openbib@code
           {
@@ -1130,17 +1147,17 @@ NianCLS, 年文檔類
 \str_if_eq:VnT \l_@@_lang_cj_str { t }
   {
     \clist_put_left:Nn \l_@@_jfm_feats_clist { trad }
-    \tl_set:Nn \l_@@_font_langfeat_tl { Chinese~Traditional }
+    \tl_set:Nn \l_@@_font_langfeat_tl { ZHT }
   }
 \str_if_eq:VnT \l_@@_lang_cj_str { s }
   {
     \clist_put_left:Nn \l_@@_jfm_feats_clist { smpl }
-    \tl_set:Nn \l_@@_font_langfeat_tl { Chinese~Simplified }
+    \tl_set:Nn \l_@@_font_langfeat_tl { ZHS }
   }
 \str_if_eq:VnT \l_@@_lang_cj_str { j }
   {
     \clist_put_left:Nn \l_@@_jfm_feats_clist { jp }
-    \tl_set:Nn \l_@@_font_langfeat_tl { Japanese }
+    \tl_set:Nn \l_@@_font_langfeat_tl { JAN }
   }
 %    \end{macrocode}
 %%%% ^^X <=|
@@ -1189,16 +1206,16 @@ NianCLS, 年文檔類
   { \mpt } < { 1 \p@ }
   { \tl_set:Nn \@ptsize { -20 } }
 \dim_compare:nNnT
-  { \mpt } = { 1\p@ }
+  { \mpt } = { 1 \p@ }
   { \tl_set:Nn \@ptsize { 0 } }
 \dim_compare:nNnT
   { \mpt } = { 1.095 \p@ }
   { \tl_set:Nn \@ptsize { 1 } }
 \dim_compare:nNnT
-  { \mpt } = { 1.200 \p@ }
+  { \mpt } = { 1.2 \p@ }
   { \tl_set:Nn \@ptsize { 2 } }
 \dim_compare:nNnT
-  { \mpt } > { 1.200 \p@ }
+  { \mpt } > { 1.2 \p@ }
   { \tl_set:Nn \@ptsize { -20 } }
 %    \end{macrocode}
 %%%% ^^X <=|
@@ -1233,7 +1250,7 @@ NianCLS, 年文檔類
             tex.sprint(-2, math.floor(0.5 + mpt * tex.getdimen(luatexbase.registernumber 'dimen@')))
           end
           function luatexja.ncls_unmagnify_fsize(e)
-            local s = luatexja.print_scaled(floor(0.5 + e / mpt * 65536))
+            local s = luatexja.print_scaled(math.floor(0.5 + e / mpt * 65536))
             tex.sprint(-2, (s:match('%.0\$')) and s:sub(1, -3) or s)
           end
         }
@@ -1245,9 +1262,7 @@ NianCLS, 年文檔類
           \tl_if_empty:NTF \l_tmpb_tl
             {
               \tl_set:Nx \l_tmpb_tl
-                {
-                  scaled \lua_now:e { tex.sprint(-2, math.floor(0.5 + \l_@@_font_magscale_tl * 1000)) }
-                }
+                { scaled \lua_now:e { tex.sprint(-2, math.floor(0.5 + \l_@@_font_magscale_tl * 1000)) } }
             }
             {
               \dim_set:Nn \dimen@ { \tl_use:N \l_tmpb_tl }
@@ -1260,19 +1275,19 @@ NianCLS, 年文檔類
                 { \tl_use:N \l_tmpa_tl \tl_use:N \l_tmpb_tl }
             }
         }
-      \cs_new_eq:NN \@@_get_externalfont_orig: { \get@external@font }
+      \cs_new_eq:NN \@@_get_external_font_orig: { \get@external@font }
       \cs_set:Nn \get@external@font
         {
           \tl_set:Nx \f@size
             { \lua_now:e { luatexja.ncls_unmagnify_fsize(\f@size) } }
-          \@@_get_externalfont_orig:
+          \@@_get_external_font_orig:
           \group_begin:
             \tl_set:Nx \l_tmpa_tl
               { \external@font \tl_use:N \c_space_tl~at \tl_use:N \c_space_tl~at }
             \exp_after:wN \@@_magnify_external_font:w \tl_use:N \l_tmpa_tl \q_nil
             \exp_after:wN
           \group_end:
-          \tl_use:N \l_tmpa_tl
+          \iow_term:n { \l_tmpa_tl }
         }
   }
 %    \end{macrocode}
@@ -1361,7 +1376,7 @@ NianCLS, 年文檔類
 %    \begin{macrocode}
 \cs_set:Npn \@setfontsize #1 #2 #3
   {
-    \ExplSyntaxOn
+    \ContExplOn
     \cs_if_eq:NNT \protect \@typeset@protect
       { \tl_set:Nn \@currsize { #1 } }
     \fontsize { #2 } { #3 } \selectfont
@@ -1374,10 +1389,13 @@ NianCLS, 年文檔類
           { \dim_set:Nn \parindent { 1 em } }
       }
     \ltj@setpar@global
-    \exp_after:wN \ltjsetkanjiskip \tl_use:N \l_@@_font_kanjiskip_tl
+     \ltjsetkanjiskip \maxdimen
     \dim_set:Nn \l_tmpa_dim { \ltjgetparameter { xkanjiskip } }
     \dim_compare:nNnT { \l_tmpa_dim } > { \z@ }
-      { \exp_after:wN \ltjsetxkanjiskip \tl_use:N \l_@@_font_xkanjiskip_tl }
+      {
+        \ltjsetxkanjiskip \maxdimen
+      }
+    \ContExplOff
   }
 %    \end{macrocode}
 % 随后定义本文档类内部使用的设置字体尺寸的宏。不于导言区末尾清除它的定义。
@@ -1391,9 +1409,11 @@ NianCLS, 年文檔類
 % 两种行距设定，适应于西文／中日文组版。因为用户也能手动指定行距设定，故我们用遗产。
 %    \begin{macrocode}
 \newif \ifnarrowbaselines
+\bool_if:NT \l_@@_layout_english_bool 
+  { \legacy_if_set_true:n { narrowbaselines } }
 \cs_new:Nn \@@_baseline_narrow:
   {
-    \ExplSyntaxOn
+    \ContExplOn
     \legacy_if_set_true:n { narrowbaselines }
     \skip_new:N \l_@@_abovedisplay_temp_skip
     \skip_new:N \l_@@_abovedisplayshort_temp_skip
@@ -1408,14 +1428,14 @@ NianCLS, 年文檔類
     \skip_set_eq:NN \abovedisplayshortskip \l_@@_abovedisplayshort_temp_skip
     \skip_set_eq:NN \belowdisplayskip \l_@@_belowdisplay_temp_skip
     \skip_set_eq:NN \belowdisplayshortskip \l_@@_belowdisplayshort_temp_skip
-    \ExplSyntaxOff
+    \ContExplOff
   }
 \cs_new:Nn \@@_baseline_wide:
   {
-    \ExplSyntaxOn
+    \ContExplOn
     \legacy_if_set_false:n { narrowbaselines }
     \@currsize \selectfont
-    \ExplSyntaxOff
+    \ContExplOff
   }
 %    \end{macrocode}
 % 然后是激活判断用的宏。
@@ -1424,7 +1444,7 @@ NianCLS, 年文檔類
   {
     \legacy_if:nTF { narrowbaselines }
       { \use_i:nn }
-       { \use_ii:nn }
+      { \use_ii:nn }
   }
 %    \end{macrocode}
 %%%% ^^X <=|
@@ -1434,25 +1454,29 @@ NianCLS, 年文檔類
 %    \begin{macrocode}
 \cs_set:Npn \normalsize
   {
+    \ContExplOn
     \@@_baseline_ifnarrow:nn
-      { \@@_font_setsize:nnn { \normalsize } { 10 pt } { 12 pt } }
-      { \@@_font_setsize:nnn { \normalsize } { 10 pt } { 16 pt } }
-    \skip_set:Nn \abovedisplayskip { 11 \mpt~plus 3\mpt~minus 4\mpt } % FIXME
-    \skip_set:Nn \abovedisplayshortskip { 0 \mpt~plus 3\mpt } % FIXME
-    \skip_set:Nn \belowdisplayskip { 9 \mpt~plus 3\mpt~4\mpt } % FIXME
-    \skip_set:Nn \belowdisplayshortskip { 0 \mpt~plus 3 \mpt } % FIXME
+      { \@@_font_setsize:nnn { \normalsize } { 10 } { 12 } }
+      { \@@_font_setsize:nnn { \normalsize } { 10 } { 16 } }
+    \iffalse
+      \skip_set:Nn \abovedisplayskip { 11 \mpt~plus 3\mpt~minus 4\mpt } % FIXME
+      \skip_set:Nn \abovedisplayshortskip { 0 \mpt~plus 3\mpt } % FIXME
+      \skip_set:Nn \belowdisplayskip { 9 \mpt~plus 3\mpt~4\mpt } % FIXME
+      \skip_set:Nn \belowdisplayshortskip { 0 \mpt~plus 3 \mpt } % FIXME
+    \fi
     \cs_new_eq:NN \@listi \@listI
+    \ContExplOff
   }
 %    \end{macrocode}
-% 然后先初始化字体，然后找一个字测字框数据。
+% 然后先初始化字体，然后找一个字测字框数据。因为前面有一些需要在导言区之后被调用的宏，所以用到了\verb|\ExplSyntaxOff|，为了防止之后环境失效再次开启环境。
 %    \begin{macrocode}
 \mcfamily \selectfont \normalsize
 \hbox_set:Nn \l_tmpa_box { 年 }
-\dim_new:N \Cht
-\dim_new:N \Cdp
-\dim_new:N \Cwd
-\dim_new:N \Cvs
-\dim_new:N \Chs
+% \dim_new:N \Cht
+% \dim_new:N \Cdp
+% \dim_new:N \Cwd
+% \dim_new:N \Cvs
+% \dim_new:N \Chs
 \dim_set:Nn \Cht { \box_ht:N \l_tmpa_box }
 \dim_set:Nn \Cdp { \box_dp:N \l_tmpa_box }
 \dim_set:Nn \Cwd { \box_wd:N \l_tmpa_box }

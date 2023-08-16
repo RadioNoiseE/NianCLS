@@ -176,9 +176,9 @@ NianCLS, 年文檔類
 % 定义视情况是否开启\LaTeX3环境的宏。
 %    \begin{macrocode}
 \cs_new:Npn \ContExplOn
-  { \ifnpream \else \ExplSyntaxOn \fi }
+  { \if npream \else \ExplSyntaxOn \fi }
 \cs_new:Npn \ContExplOff
-  { \ifnpream \else \ExplSyntaxOff \fi }
+  { \if npream \else \ExplSyntaxOff \fi }
 %    \end{macrocode}
 % 定义用于在读取结束后释放缓存的宏。
 %    \begin{macrocode}
@@ -1232,16 +1232,71 @@ NianCLS, 年文檔類
   { \dim_set:Nn \mpt { \p@ } }
 %    \end{macrocode}
 % 实际补正。注意编码等，以及\textsf{expl3}与{\LaTeXe}的兼容性（需小心维护）。
-% 关于使表示字形的控制序列等同于\verb|\relax|的原因等，见\texttt{https://github.com/CTeX-org/forum/issues/293}。
+% 关于使表示字形的控制序列等同于\verb|\relax|的原因等，见\texttt{https://github.com/CTeX-org/forum/issues/293}。\par
+% 不知为何，所有关于字体NFSS模块的东西只要用\LaTeX3写就会出问题，而且稀奇古怪。
+% 比如此处，\verb|%|在\verb|\directlua|里就是写不出来。然而在外部文件里重写就没问题。
+% 甚至用\verb|\begingroup\catcode`\%=12\xdef\percent{%}\endgroup|都会报Runaway Argument。
+% 所以也重写。（我真是怕了它了）\par
+% 问题在\verb|\bool_if:NT|上，不知为何在里面玩catcode变有些问题。（其实这里不用重写的！）
 %    \begin{macrocode}
+\newif \ifxreal \xrealfalse
+\bool_if:NT \l_@@_font_xreal_bool
+  { \xrealtrue }
+\ifxreal
+  \ExplSyntaxOff
+    \expandafter\let\csname TU/lmr/m/n/10\endcsname\relax
+    \expandafter\let\csname OMX/cmex/m/n/10\endcsname\relax
+    \newluafunction\ncls@magnify@font@calc
+    \begingroup
+      \catcode`\%=12\catcode`\$=12
+      \xdef\regex{%.0$}
+    \endgroup
+    \directlua%
+      {
+        local mpt = tex.getdimen('mpt')/65536
+        lua.get_functions_table()[\the\ncls@magnify@font@calc] = function()
+          tex.sprint(-2, math.floor(0.5 + mpt * tex.getdimen(luatexbase.registernumber 'dimen@')))
+        end
+        function luatexja.ncls_unmagnify_fsize(e)
+          local s = luatexja.print_scaled(math.floor(0.5 + e / mpt * 65536))
+          tex.sprint(-2, (s:match('\regex')) and s:sub(1, -3) or s)
+        end
+      }
+    \let\regex\@undefined
+    \def\ncls@magnify@external@font#1 at#2 at#3\@nil%
+      {
+        \def\@tempa{#1}\def\@tempb{#2}
+        \ifx\@tempb\@empty
+          \edef\tempb{
+            scaled\directlua{tex.sprint(-2, math.floor(0.5 + \csname l_@@_font_magscale_tl\endcsname * 1000))}
+          }
+        \else
+          \dimen@\@tempb\relax
+          \edef\@tempb{ at\luafunction\ncls@magnify@font@calc sp}
+        \fi
+        \edef\@tempa{\def\noexpand\external@font{\@tempa\@tempb}}
+      }
+    \let\ncls@orig@get@external@font\get@external@font
+    \def\get@external@font%
+      {
+        \edef\f@size{\directlua{luatexja.ncls_unmagnify_fsize(\f@size)}}
+        \ncls@orig@get@external@font
+        \begingroup
+          \edef\@tempa{\external@font\space at\space at}
+          \expandafter\ncls@magnify@external@font\@tempa\@nil
+          \expandafter%
+        \endgroup%
+        \@tempa
+      }
+  \ExplSyntaxOn
+\fi
+%<*obsolete>
 \bool_if:NT \l_@@_font_xreal_bool
   {
     \exp_after:wN \cs_set_eq:NN \cs:w TU/lmr/m/n/10 \cs_end: \scan_stop:
     \exp_after:wN \cs_set_eq:NN \cs:w OMX/cmex/m/n/10 \cs_end: \scan_stop:
     \@@_luafunc_new:N \@@_magnify_font_calc
     \group_begin:
-      % \char_set_catcode_other:N \$
-      \char_set_catcode_other:N \%
       \char_set_catcode_space:n { 32 }
       \lua_now:e
         {
@@ -1249,47 +1304,52 @@ NianCLS, 年文檔類
           lua.get_functions_table()[\the\@@_magnify_font_calc] = function()
             tex.sprint(-2, math.floor(0.5 + mpt * tex.getdimen(luatexbase.registernumber 'dimen@')))
           end
+        }
+      \char_set_catcode_other:n { 37 }
+      \lua_now:n
+        {
           function luatexja.ncls_unmagnify_fsize(e)
             local s = luatexja.print_scaled(math.floor(0.5 + e / mpt * 65536))
             tex.sprint(-2, (s:match('%.0\$')) and s:sub(1, -3) or s)
           end
         }
-      \group_end:
-      \cs_new:Npn \@@_magnify_external_font:w #1~at #2~at #3 \q_nil
-        {
-          \tl_set:Nn \l_tmpa_tl { #1 }
-          \tl_set:Nn \l_tmpb_tl { #2 }
-          \tl_if_empty:NTF \l_tmpb_tl
-            {
-              \tl_set:Nx \l_tmpb_tl
-                { scaled \lua_now:e { tex.sprint(-2, math.floor(0.5 + \l_@@_font_magscale_tl * 1000)) } }
-            }
-            {
-              \dim_set:Nn \dimen@ { \tl_use:N \l_tmpb_tl }
-              \tl_set:Nx \l_tmpb_tl
-                { at \@@_luafunc_use:N \@@_magnify_font_calc~sp }
-            }
+    \group_end:
+    \cs_new:Npn \@@_magnify_external_font:w #1~at #2~at #3 \q_nil
+      {
+        \tl_set:Nn \l_tmpa_tl { #1 }
+        \tl_set:Nn \l_tmpb_tl { #2 }
+        \tl_if_empty:NTF \l_tmpb_tl
+          {
+            \tl_set:Nx \l_tmpb_tl
+              { scaled \lua_now:e { tex.sprint(-2, math.floor(0.5 + \l_@@_font_magscale_tl * 1000)) } }
+          }
+          {
+            \dim_set:Nn \dimen@ { \tl_use:N \l_tmpb_tl }
+            \tl_set:Nx \l_tmpb_tl
+              { at \@@_luafunc_use:N \@@_magnify_font_calc~sp }
+          }
+        \tl_set:Nx \l_tmpa_tl
+          {
+            \tl_set:Nn \exp_not:N \external@font
+              { \tl_use:N \l_tmpa_tl \tl_use:N \l_tmpb_tl }
+          }
+      }
+    \cs_new_eq:NN \@@_get_external_font_orig: \get@external@font
+    \cs_set:Npn \get@external@font
+      {
+        \tl_set:Nx \f@size
+          { \lua_now:e { luatexja.ncls_unmagnify_fsize(\f@size) } }
+        \@@_get_external_font_orig:
+        \group_begin:
           \tl_set:Nx \l_tmpa_tl
-            {
-              \tl_set:Nn \exp_not:N \external@font
-                { \tl_use:N \l_tmpa_tl \tl_use:N \l_tmpb_tl }
-            }
-        }
-      \cs_new_eq:NN \@@_get_external_font_orig: { \get@external@font }
-      \cs_set:Nn \get@external@font
-        {
-          \tl_set:Nx \f@size
-            { \lua_now:e { luatexja.ncls_unmagnify_fsize(\f@size) } }
-          \@@_get_external_font_orig:
-          \group_begin:
-            \tl_set:Nx \l_tmpa_tl
-              { \external@font \tl_use:N \c_space_tl~at \tl_use:N \c_space_tl~at }
-            \exp_after:wN \@@_magnify_external_font:w \tl_use:N \l_tmpa_tl \q_nil
-            \exp_after:wN
-          \group_end:
-          \iow_term:n { \l_tmpa_tl }
-        }
+            { \external@font \tl_use:N \c_space_tl~at \tl_use:N \c_space_tl~at }
+          \exp_after:wN \@@_magnify_external_font:w \tl_use:N \l_tmpa_tl \q_nil
+          \exp_after:wN
+        \group_end:
+        \iow_term:n { \l_tmpa_tl }
+      }
   }
+%</obsolete>
 %    \end{macrocode}
 % NFSS魔改结束，注意其内部宏的局部及全局命名空间。此部分不进行优化。
 %%%% ^^X <=|
@@ -1376,6 +1436,29 @@ NianCLS, 年文檔類
 %    \begin{macrocode}
 \cs_set:Npn \@setfontsize #1 #2 #3
   {
+    \ifx \protect \@typeset@protect
+      \let \@currsize #1
+    \fi
+    \fontsize { #2 } { #3 } \selectfont
+    \ifdim \parindent > \z@
+      \ContExplOn
+        \str_if_eq:VnTF \l_@@_lang_cj_str { j }
+          { \parindent = 1 \zw }
+          { \parindent = 2 \zw }
+        \bool_if:NT \l_@@_layout_english_bool
+          { \parindent = 1 em }
+      \ContExplOff
+    \fi
+    \ltj@setpar@global
+    \expandafter \ltjsetkanjiskip \csname~l__ncls_font_kanjiskip_tl \endcsname
+    \@tempskipa = \ltjgetparameter { xkanjiskip }
+    \ifdim \@tempskipa > \z@
+      \expandafter \ltjsetxkanjiskip \csname~l__ncls_font_xkanjiskip_tl \endcsname
+    \fi
+  }
+%<*obsolete>
+\cs_set:Npn \@setfontsize #1 #2 #3
+  {
     \ContExplOn
     \cs_if_eq:NNT \protect \@typeset@protect
       { \tl_set:Nn \@currsize { #1 } }
@@ -1389,7 +1472,7 @@ NianCLS, 年文檔類
           { \dim_set:Nn \parindent { 1 em } }
       }
     \ltj@setpar@global
-     \ltjsetkanjiskip \maxdimen
+    \ltjsetkanjiskip \maxdimen
     \dim_set:Nn \l_tmpa_dim { \ltjgetparameter { xkanjiskip } }
     \dim_compare:nNnT { \l_tmpa_dim } > { \z@ }
       {
@@ -1397,11 +1480,16 @@ NianCLS, 年文檔類
       }
     \ContExplOff
   }
+%</obsolete>
 %    \end{macrocode}
 % 随后定义本文档类内部使用的设置字体尺寸的宏。不于导言区末尾清除它的定义。
 %    \begin{macrocode}
+\cs_new:Npn \ncls@fontsetsize #1 #2 #3
+  { \@setfontsize #1 { #2 } { #3 } }
+%<*obsolete>
 \cs_new:Nn \@@_font_setsize:nnn
   { \@setfontsize #1 { #2 \mpt } { #3 \mpt } }
+%</obsolete>
 %    \end{macrocode}
 %%%% ^^X <=|
 %%%% ^^X 行距設定 |=>
@@ -1409,6 +1497,28 @@ NianCLS, 年文檔類
 % 两种行距设定，适应于西文／中日文组版。因为用户也能手动指定行距设定，故我们用遗产。
 %    \begin{macrocode}
 \newif \ifnarrowbaselines
+\bool_if:NT \l_@@_layout_english_bool 
+  { \narrowbaselinestrue }
+\cs_new:Npn \narrowbaselines
+  {
+    \narrowbaselinestrue
+    \skip0 = \abovedisplayskip
+    \skip2 = \abovedisplayshortskip
+    \skip4 = \belowdisplayskip
+    \skip6 = \belowdisplayshortskip
+    \@currsize \selectfont
+    \abovedisplayskip = \skip0
+    \abovedisplayshortskip = \skip2
+    \belowdisplayskip = \skip4
+    \belowdisplayshortskip = \skip6
+    \relax
+  }
+\cs_new:Npn \widebaselines
+  {
+    \narrowbaselinesfalse
+    \@currsize \selectfont
+  }
+%<*obsolete>
 \bool_if:NT \l_@@_layout_english_bool 
   { \legacy_if_set_true:n { narrowbaselines } }
 \cs_new:Nn \@@_baseline_narrow:
@@ -1428,6 +1538,7 @@ NianCLS, 年文檔類
     \skip_set_eq:NN \abovedisplayshortskip \l_@@_abovedisplayshort_temp_skip
     \skip_set_eq:NN \belowdisplayskip \l_@@_belowdisplay_temp_skip
     \skip_set_eq:NN \belowdisplayshortskip \l_@@_belowdisplayshort_temp_skip
+    \scan_stop:
     \ContExplOff
   }
 \cs_new:Nn \@@_baseline_wide:
@@ -1437,21 +1548,44 @@ NianCLS, 年文檔類
     \@currsize \selectfont
     \ContExplOff
   }
+%</obsolete>
 %    \end{macrocode}
 % 然后是激活判断用的宏。
 %    \begin{macrocode}
+\cs_new:Npn \ncls@ifnarrowbaselines
+  {
+    \ifnarrowbaselines
+      \expandafter \@firstoftwo
+    \else
+      \expandafter \@secondoftwo
+    \fi
+  }
+%<*obsolete>
 \cs_new:Npn \@@_baseline_ifnarrow:nn
   {
     \legacy_if:nTF { narrowbaselines }
       { \use_i:nn }
       { \use_ii:nn }
   }
+%</obsolete>
 %    \end{macrocode}
 %%%% ^^X <=|
 %%%% ^^X 字體尺寸 |=>
 % \subsubsection{字體尺寸設置}
 % 终于可以设置重要的字号及行距等相关信息了。首先是正常尺寸（10pt）。因为我们的引擎她不支持mag，所以都是用标准尺寸缩放出来的，也就在这里可以省一点事：全局使用标准尺寸了。根据ltjs文档类，公称10分的（中）日文字体约为9.25分（也就是ASCII的0.961倍），所以设置16分的行间距相当宽松；同时16比上9.25大概是1.73，也比较接近传统「二分四分」的约定。顺便，这里就直接用expl3的语法了。而且，都用expl3了，尺寸就直接写了。
 %    \begin{macrocode}
+\cs_set:Npn \normalsize
+  {
+    \ncls@ifnarrowbaselines
+      { \ncls@fontsetsize \normalsize { 10 } { 12 } }
+      { \ncls@fontsetsize \normalsize { 10 } { 16 } }
+    \abovedisplayskip 11 \mpt plus 3 \mpt minus 4 \mpt
+    \abovedisplayshortskip \z@ plus 3 \mpt
+    \belowdisplayskip 9 \mpt plus 3 \mpt minus 4 \mpt
+    \belowdisplayshortskip \belowdisplayskip
+    \let \@listi \@listI
+  }
+%<*obsolete>
 \cs_set:Npn \normalsize
   {
     \ContExplOn
@@ -1467,16 +1601,13 @@ NianCLS, 年文檔類
     \cs_new_eq:NN \@listi \@listI
     \ContExplOff
   }
+%</obsolete>
 %    \end{macrocode}
 % 然后先初始化字体，然后找一个字测字框数据。因为前面有一些需要在导言区之后被调用的宏，所以用到了\verb|\ExplSyntaxOff|，为了防止之后环境失效再次开启环境。
 %    \begin{macrocode}
 \mcfamily \selectfont \normalsize
+\ExplSyntaxOn
 \hbox_set:Nn \l_tmpa_box { 年 }
-% \dim_new:N \Cht
-% \dim_new:N \Cdp
-% \dim_new:N \Cwd
-% \dim_new:N \Cvs
-% \dim_new:N \Chs
 \dim_set:Nn \Cht { \box_ht:N \l_tmpa_box }
 \dim_set:Nn \Cdp { \box_dp:N \l_tmpa_box }
 \dim_set:Nn \Cwd { \box_wd:N \l_tmpa_box }

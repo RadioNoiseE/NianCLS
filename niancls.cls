@@ -815,57 +815,74 @@
       { \bool_set_false:N \l__ncls_font_xreal_bool }
   }
   { \dim_set:Nn \mpt { \p@ } }
-\newif \ifxreal \xrealfalse
+\newif \ifxreal
+\legacy_if_set_false:n { xreal }
 \bool_if:NT \l__ncls_font_xreal_bool
-  { \xrealtrue }
+  { \legacy_if_set_true:n { xreal } }
 \ifxreal
-  \ExplSyntaxOff
-    \expandafter\let\csname TU/lmr/m/n/10\endcsname\relax
-    \expandafter\let\csname OMX/cmex/m/n/10\endcsname\relax
-    \newluafunction\ncls@magnify@font@calc
-    \begingroup
-      \catcode`\%=12\catcode`\$=12
-      \xdef\regex{%.0$}
-    \endgroup
-    \directlua%
+  \exp_after:wN \cs_set_eq:NN \cs:w~OT1/cmr/m/n/10 \cs_end: \scan_stop:
+  %\exp_after:wN \cs_set_eq:NN \cs:w~TU/lmr/m/n/10 \cs_end: \scan_stop:
+  \exp_after:wN \cs_set_eq:NN \cs:w~OMX/cmex/m/n/10 \cs_end: \scan_stop:
+  \__ncls_luafunc_new:N \__ncls_magnify_font_calc
+  \group_begin:
+    \char_set_catcode_space:n { 32 }
+    \lua_now:e
       {
         local mpt = tex.getdimen('mpt')/65536
-        lua.get_functions_table()[\the\ncls@magnify@font@calc] = function()
+        lua.get_functions_table()[\the\__ncls_magnify_font_calc] = function()
           tex.sprint(-2, math.floor(0.5 + mpt * tex.getdimen(luatexbase.registernumber 'dimen@')))
         end
+      }
+    \group_begin:
+      \char_set_catcode_other:n { 36 }
+      \char_set_catcode_other:n { 37 }
+      \tl_gset:Nn \g_tmpa_tl { %.0$ }
+    \group_end:
+    \lua_now:e
+      {
+        local mpt = tex.getdimen('mpt')/65536
         function luatexja.ncls_unmagnify_fsize(e)
           local s = luatexja.print_scaled(math.floor(0.5 + e / mpt * 65536))
-          tex.sprint(-2, (s:match('\regex')) and s:sub(1, -3) or s)
+          tex.sprint(-2, (s:match('\g_tmpa_tl')) and s:sub(1, -3) or s)
         end
       }
-    \let\regex\@undefined
-    \def\ncls@magnify@external@font#1 at#2 at#3\@nil%
-      {
-        \def\@tempa{#1}\def\@tempb{#2}
-        \ifx\@tempb\@empty
-          \edef\tempb{
-            scaled\directlua{tex.sprint(-2, math.floor(0.5 + \csname l__ncls_font_magscale_tl\endcsname * 1000))}
-          }
-        \else
-          \dimen@\@tempb\relax
-          \edef\@tempb{ at\luafunction\ncls@magnify@font@calc sp}
-        \fi
-        \edef\@tempa{\def\noexpand\external@font{\@tempa\@tempb}}
-      }
-    \let\ncls@orig@get@external@font\get@external@font
-    \def\get@external@font%
-      {
-        \edef\f@size{\directlua{luatexja.ncls_unmagnify_fsize(\f@size)}}
-        \ncls@orig@get@external@font
-        \begingroup
-          \edef\@tempa{\external@font\space at\space at}
-          \expandafter\ncls@magnify@external@font\@tempa\@nil
-          \expandafter%
-        \endgroup%
-        \@tempa
-      }
-  \ExplSyntaxOn
+  \group_end:
+  \cs_new:Npn \__ncls_magnify_external_font:w #1~at #2~at #3 \q_nil
+    {
+      \tl_set:Nn \l_tmpa_tl { #1 }
+      \tl_set:Nn \l_tmpb_tl { #2 }
+      \tl_if_empty:NTF \l_tmpb_tl
+        {
+          \tl_set:Nx \l_tmpb_tl
+            { scaled \lua_now:e { tex.sprint(-2, math.floor(0.5 + \l__ncls_font_magscale_tl * 1000)) } }
+        }
+        {
+          \dim_set:Nn \dimen@ { \tl_use:N \l_tmpb_tl }
+          \tl_set:Nx \l_tmpb_tl
+            { at \__ncls_luafunc_use:N \__ncls_magnify_font_calc~sp }
+        }
+      \tl_set:Nx \l_tmpa_tl
+        {
+          \tl_set:Nn \exp_not:N \external@font
+            { \tl_use:N \l_tmpa_tl \tl_use:N \l_tmpb_tl }
+        }
+    }
+  \cs_new_eq:NN \__ncls_get_external_font_orig: \get@external@font
+  \cs_set:Npn \get@external@font
+    {
+      \tl_set:Nx \f@size
+        { \lua_now:e { luatexja.ncls_unmagnify_fsize(\f@size) } }
+      \__ncls_get_external_font_orig:
+      \group_begin:
+        \tl_set:Nx \l_tmpa_tl
+          { \external@font \tl_use:N \c_space_tl~at \tl_use:N \c_space_tl~at }
+        \exp_after:wN \__ncls_magnify_external_font:w \l_tmpa_tl \q_nil
+        \exp_after:wN
+      \group_end:
+      \l_tmpa_tl
+    }
 \fi
+
 %%%% ^^X <=|
 %%%% ^^X 回滾字體可選特性 |=>
 \bool_if:NT \l__ncls_font_fallback_bool

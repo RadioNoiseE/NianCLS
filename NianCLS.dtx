@@ -1244,7 +1244,55 @@ NianCLS, 年文檔類
 \bool_if:NT \l_@@_font_xreal_bool
   { \legacy_if_set_true:n { xreal } }
 \ifxreal
-  % \exp_after:wN \cs_set_eq:NN \cs:w~OT1/cmr/m/n/10 \cs_end: \scan_stop:
+  \ExplSyntaxOff
+    \expandafter\let\csname TU/lmr/m/n/10\endcsname\relax
+    \expandafter\let\csname OMX/cmex/m/n/10\endcsname\relax
+    \newluafunction\ncls@magnify@font@calc
+    \begingroup
+      \catcode`\%=12\catcode`\$=12
+      \xdef\regex{%.0$}
+    \endgroup
+    \directlua%
+      {
+        local mpt = tex.getdimen('mpt')/65536
+        lua.get_functions_table()[\the\ncls@magnify@font@calc] = function()
+          tex.sprint(-2, math.floor(0.5 + mpt * tex.getdimen(luatexbase.registernumber 'dimen@')))
+        end
+        function luatexja.ncls_unmagnify_fsize(e)
+          local s = luatexja.print_scaled(math.floor(0.5 + e / mpt * 65536))
+          tex.sprint(-2, (s:match('\regex')) and s:sub(1, -3) or s)
+        end
+      }
+    \global\let\regex\@undefined
+    \def\ncls@magnify@external@font#1 at#2 at#3\@nil%
+      {
+        \def\@tempa{#1}\def\@tempb{#2}
+        \ifx\@tempb\@empty
+          \edef\tempb{
+            scaled\directlua{tex.sprint(-2, math.floor(0.5 + \csname l_@@_font_magscale_tl\endcsname * 1000))}
+          }
+        \else
+          \dimen@\@tempb\relax
+          \edef\@tempb{ at\luafunction\ncls@magnify@font@calc sp}
+        \fi
+        \edef\@tempa{\def\noexpand\external@font{\@tempa\@tempb}}
+      }
+    \let\ncls@orig@get@external@font\get@external@font
+    \def\get@external@font%
+      {
+        \edef\f@size{\directlua{luatexja.ncls_unmagnify_fsize(\f@size)}}
+        \ncls@orig@get@external@font
+        \begingroup
+          \edef\@tempa{\external@font\space at\space at}
+          \expandafter\ncls@magnify@external@font\@tempa\@nil
+          \expandafter%
+        \endgroup%
+        \@tempa
+      }
+  \ExplSyntaxOn
+\fi
+%<*obsolete>
+\ifxreal
   % \exp_after:wN \cs_set_eq:NN \cs:w~TU/lmr/m/n/10 \cs_end: \scan_stop:
   % \exp_after:wN \cs_set_eq:NN \cs:w~OMX/cmex/m/n/10 \cs_end: \scan_stop:
   \@@_luafunc_new:N \@@_magnify_font_calc
@@ -1306,57 +1354,7 @@ NianCLS, 年文檔類
       \l_tmpa_tl
     }
 \fi
-%<*obsolete>
-\ifxreal
-  \ExplSyntaxOff
-    \expandafter\let\csname TU/lmr/m/n/10\endcsname\relax
-    \expandafter\let\csname OMX/cmex/m/n/10\endcsname\relax
-    \newluafunction\ncls@magnify@font@calc
-    \begingroup
-      \catcode`\%=12\catcode`\$=12
-      \xdef\regex{%.0$}
-    \endgroup
-    \directlua%
-      {
-        local mpt = tex.getdimen('mpt')/65536
-        lua.get_functions_table()[\the\ncls@magnify@font@calc] = function()
-          tex.sprint(-2, math.floor(0.5 + mpt * tex.getdimen(luatexbase.registernumber 'dimen@')))
-        end
-        function luatexja.ncls_unmagnify_fsize(e)
-          local s = luatexja.print_scaled(math.floor(0.5 + e / mpt * 65536))
-          tex.sprint(-2, (s:match('\regex')) and s:sub(1, -3) or s)
-        end
-      }
-    \global\let\regex\@undefined
-    \def\ncls@magnify@external@font#1 at#2 at#3\@nil%
-      {
-        \def\@tempa{#1}\def\@tempb{#2}
-        \ifx\@tempb\@empty
-          \edef\tempb{
-            scaled\directlua{tex.sprint(-2, math.floor(0.5 + \csname l_@@_font_magscale_tl\endcsname * 1000))}
-          }
-        \else
-          \dimen@\@tempb\relax
-          \edef\@tempb{ at\luafunction\ncls@magnify@font@calc sp}
-        \fi
-        \edef\@tempa{\def\noexpand\external@font{\@tempa\@tempb}}
-      }
-    \let\ncls@orig@get@external@font\get@external@font
-    \def\get@external@font%
-      {
-        \edef\f@size{\directlua{luatexja.ncls_unmagnify_fsize(\f@size)}}
-        \ncls@orig@get@external@font
-        \begingroup
-          \edef\@tempa{\external@font\space at\space at}
-          \expandafter\ncls@magnify@external@font\@tempa\@nil
-          \expandafter%
-        \endgroup%
-        \@tempa
-      }
-  \ExplSyntaxOn
-\fi
 %</obsolete>
-
 %    \end{macrocode}
 % NFSS魔改结束，注意其内部宏的局部及全局命名空间。此部分不进行优化。
 %%%% ^^X <=|
@@ -1579,7 +1577,7 @@ NianCLS, 年文檔類
 %%%% ^^X <=|
 %%%% ^^X 字體尺寸 |=>
 % \subsubsection{字體尺寸設置}
-% 终于可以设置重要的字号及行距等相关信息了。首先是正常尺寸（10pt）。因为我们的引擎她不支持mag，所以都是用标准尺寸缩放出来的，也就在这里可以省一点事：全局使用标准尺寸了。根据ltjs文档类，公称10分的（中）日文字体约为9.25分（也就是ASCII的0.961倍），所以设置16分的行间距相当宽松；同时16比上9.25大概是1.73，也比较接近传统「二分四分」的约定。顺便，这里就直接用expl3的语法了。而且，都用expl3了，尺寸就直接写了。
+% 终于可以设置重要的字号及行距等相关信息了。首先是正常尺寸（10pt）。因为我们的引擎她不支持mag，所以都是用标准尺寸缩放出来的，也就在这里可以省一点事：全局使用标准尺寸了。根据ltjs文档类，公称10分的（中）日文字体约为9.25分（也就是ASCII的0.961倍），所以设置16分的行间距相当宽松；同时16比上9.25大概是1.73，也比较接近传统「二分四分」的约定。然后这个行距就不允许自定义了。顺便，这里就直接用expl3的语法了。而且，都用expl3了，尺寸就直接写了。
 %    \begin{macrocode}
 \cs_set:Npn \normalsize
   {
@@ -1612,6 +1610,8 @@ NianCLS, 年文檔類
 %    \end{macrocode}
 % 然后先初始化字体，然后找一个字测字框数据。因为前面有一些需要在导言区之后被调用的宏，所以用到了\verb|\ExplSyntaxOff|，为了防止之后环境失效再次开启环境。
 %    \begin{macrocode}
+\bool_if:NT \l_@@_layout_tate_bool { \tate }
+\ExplSyntaxOff
 \mcfamily \selectfont \normalsize
 \ExplSyntaxOn
 \hbox_set:Nn \l_tmpa_box { 年 }

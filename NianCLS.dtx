@@ -187,15 +187,13 @@ NianCLS, 年文檔類
   { \seq_gput_right:Nn \g_@@_aftercls_del_seq { #1 } }
 \@@_at_preamble_end:n
   {
-    \ExplSyntaxOn
-    \cs_undefine:N \g_@@_aftercls_del_seq
-    \ExplSyntaxOff
+  \cs_undefine:N \g_@@_aftercls_del_seq
   }
 %    \end{macrocode}
 % 封装{\LuaTeX}提供的Lua接口。
 %    \begin{macrocode}
-\cs_new_protected:Npn \@@_luafunc_new:N { \newluafunction }
-\cs_new_protected:Npn \@@_luafunc_use:N { \luafunction }
+\cs_new:Npn \@@_luafunc_new:N { \newluafunction }
+\cs_new:Npn \@@_luafunc_use:N { \luafunction }
 %    \end{macrocode}
 % 提供键对值的统一错误调试处理模版。
 %    \begin{macrocode}
@@ -343,13 +341,44 @@ NianCLS, 年文檔類
   }
 %    \end{macrocode}
 %%%% ^^X <=|
+%%%% ^^X 分欄 |=>
+% \subsubsection{分欄}
+% 设置全局双栏或单栏。这里只是处理，待后设置。
+%    \begin{macrocode}
+\bool_new:N \l_@@_layout_restonecol_bool
+\keys_define:nn { ncls }
+  {
+    column .choice:,
+    column / one .code:n = { \bool_set_false:N \l_@@_layout_restonecol_bool },
+    column / two .code:n = { \bool_set_true:N \l_@@_layout_restonecol_bool },
+    column / unknown .code:n =
+      {
+        \msg_error:nnxxx { ncls } { unknown-choice }
+          { column }
+          { one,~two }
+          { \exp_not:n { #1 } }
+      },
+    column .value_required:n = true,
+    column .initial:n = { one }
+  }
+%    \end{macrocode}
+% 然后顺便设置双栏的间距。因为其属于页面尺寸参数需要在初始时通过文档类的选项设定避免多次计算页面故在这里设置。（好长一句话）
+%    \begin{macrocode}
+\tl_new:N \l_@@_layout_column_gap_tl
+\keys_define:nn { ncls }
+  {
+    column_gap .tl_set:N = \l_@@_layout_column_gap_tl,
+    column_gap .value_required:n = true,
+    column_gap .initial:n = { 2 \zw }
+  }
+%    \end{macrocode}
+%%%% ^^X <=|
 %%%% ^^X 文檔類型 |=>
 % \subsubsection{文檔類型}
 % 设置文档类型（全局）为文章、论文报告、或书籍。依赖错综复杂，故不使用布尔类型。
 % 同时作为较高层次的设置，会影响其它一些选项，故先行初始化其。
 % 首先申明这些低阶选项的宏。
 %    \begin{macrocode}
-\bool_new:N \l_@@_layout_restonecol_bool
 \bool_new:N \l_@@_layout_twoside_bool
 \bool_new:N \l_@@_layout_mparswitch_bool
 \bool_new:N \l_@@_layout_titlepage_bool
@@ -391,38 +420,6 @@ NianCLS, 年文檔類
       },
     doctype .value_required:n = true,
     doctype .initial:n = { article }
-  }
-%    \end{macrocode}
-%%%% ^^X <=|
-%%%% ^^X 分欄 |=>
-% \subsubsection{分欄}
-% 设置全局双栏或单栏。这里只是处理，待后设置。
-%    \begin{macrocode}
-%<obsolete> \bool_new:N \l_@@_layout_restonecol_bool
-\keys_define:nn { ncls }
-  {
-    column .choice:,
-    column / one .code:n = { \bool_set_false:N \l_@@_layout_restonecol_bool },
-    column / two .code:n = { \bool_set_true:N \l_@@_layout_restonecol_bool },
-    column / unknown .code:n =
-      {
-        \msg_error:nnxxx { ncls } { unknown-choice }
-          { column }
-          { one,~two }
-          { \exp_not:n { #1 } }
-      },
-    column .value_required:n = true,
-    column .initial:n = { one }
-  }
-%    \end{macrocode}
-% 然后顺便设置双栏的间距。因为其属于页面尺寸参数需要在初始时通过文档类的选项设定避免多次计算页面故在这里设置。（好长一句话）
-%    \begin{macrocode}
-\tl_new:N \l_@@_layout_column_gap_tl
-\keys_define:nn { ncls }
-  {
-    column_gap .tl_set:N = \l_@@_layout_column_gap_tl,
-    column_gap .value_required:n = true,
-    column_gap .initial:n = { 2 \zw }
   }
 %    \end{macrocode}
 %%%% ^^X <=|
@@ -712,14 +709,17 @@ NianCLS, 年文檔類
 % 设定全局明朝及哥特字体。
 %    \begin{macrocode}
 \tl_new:N \l_@@_font_mincho_tl
-\tl_new:N \l_@@_font_gothic_tl
 \keys_define:nn { ncls }
   {
     mincho .tl_set:N = \l_@@_font_mincho_tl,
-    gothic .tl_set:N = \l_@@_font_gothic_tl,
     mincho .value_required:n = true,
+    mincho .initial:n = { HaranoAji Mincho }
+  }
+\tl_new:N \l_@@_font_gothic_tl
+\keys_define:nn { ncls }
+  {
+    gothic .tl_set:N = \l_@@_font_gothic_tl,
     gothic .value_required:n = true,
-    mincho .initial:n = { HaranoAji Mincho },
     gothic .initial:n = { HaranoAji Gothic }
   }
 %    \end{macrocode}
@@ -837,13 +837,17 @@ NianCLS, 年文檔類
 % 用户指定、暂时存储的字列表已定义，此处存储最终数据的逗号列表及纸长度及宽度「优化」的全局申明。
 %    \begin{macrocode}
 \clist_new:N \l_@@_paper_sizeconf_clist
-% \dim_new:N \g_@@_paper_width_dim
-% \dim_new:N \g_@@_paper_height_dim
+%<*obsolete>
+\dim_new:N \g_@@_paper_width_dim
+\dim_new:N \g_@@_paper_height_dim
+%</obsolete>
 %    \end{macrocode}
 % 「优化」以及两个存储长、宽的局部宏。
 %    \begin{macrocode}
-% \tl_new:N \l_@@_paper_widthaux_tl
-% \tl_new:N \l_@@_paper_heightaux_tl
+%<*obsolete>
+\tl_new:N \l_@@_paper_widthaux_tl
+\tl_new:N \l_@@_paper_heightaux_tl
+%</obsolete>
 %    \end{macrocode}
 %%%% ^^X <=|
 %%%% ^^X 主要功能宏 |=>
@@ -989,14 +993,18 @@ NianCLS, 年文檔類
 \@@_macro_release:N \@@_paper_addsize:nnn 
 \@@_macro_release:N \g_@@_paper_sizelist_prop
 \@@_macro_release:N \l_@@_paper_sizeinfo_tl
-% \@@_macro_release:N \g_@@_paper_sizeconf_clist
-% \@@_macro_release:N \g_@@_paper_width_dim
-% \@@_macro_release:N \g_@@_paper_height_dim
+%<*obsolete>
+\@@_macro_release:N \g_@@_paper_sizeconf_clist
+\@@_macro_release:N \g_@@_paper_width_dim
+\@@_macro_release:N \g_@@_paper_height_dim
+%</obsolete>
 \@@_macro_release:N \l_@@_paper_corpmark_mark_bool
 \@@_macro_release:N \l_@@_paper_corpmark_date_bool
 \@@_macro_release:N \l_@@_paper_portrait_bool
-% \@@_macro_release:N \l_@@_paper_widthaux_tl
-% \@@_macro_release:N \l_@@_paper_heightaux_tl
+%<*obsolete>
+\@@_macro_release:N \l_@@_paper_widthaux_tl
+\@@_macro_release:N \l_@@_paper_heightaux_tl
+%</obsolete>
 %    \end{macrocode}
 %%%% ^^X <=|
 %%%%% ^^X <=|
@@ -1028,21 +1036,13 @@ NianCLS, 年文檔類
 % \subsection{選項設定}
 %%%% ^^X 組版方向設定 |=>
 % \subsubsection{組版方向設定}
-% 支持纵排组版，使用钩子进行处理。
-%    \begin{macrocode}
-\bool_if:NT \l_@@_layout_tate_bool
-  {
-    \RequirePackage { lltjext } \tate
-    \@@_at_doc_begin:n
-      {
-        \iow_term:n {《縦組モード》} \adjustbaseline
-      }
-  }
-%    \end{macrocode}
+% 支持纵排组版，使用钩子进行处理。由于次数还未载入\textsf{Lua\TeX-ja}宏集，故延后。\par
 % 「疑」同时配置对应的字体矩阵特性。（其逗号列表的宏定义将在「字体矩阵配置・内存管理」中被定义与清除。）
 %    \begin{macrocode}
-% \bool_if:NT \l_@@_layout_tate_bool
-%   { \clist_put_left:Nn \l_@@_jfm_feats_clist { vert } }
+%<*obsolete>
+\bool_if:NT \l_@@_layout_tate_bool
+  { \clist_put_left:Nn \l_@@_jfm_feats_clist { vert } }
+%</obsolete>
 %    \end{macrocode}
 %%%% ^^X <=|
 %%%% ^^X 單雙欄設定 |=>
@@ -1115,7 +1115,7 @@ NianCLS, 年文檔類
 % 清除不必要的宏。
 %    \begin{macrocode}
 \@@_macro_release:N \l_@@_layout_tate_bool
-% \@@_macro_release:N \l_@@_layout_english_bool
+\@@_macro_release:N \l_@@_layout_english_bool
 \@@_macro_release:N \l_@@_layout_restonecol_bool
 \@@_macro_release:N \l_@@_layout_column_gap_tl
 \@@_macro_release:N \l_@@_layout_twoside_bool
@@ -1192,6 +1192,14 @@ NianCLS, 年文檔類
     lineend = extended,
     priority = true
   ]
+\bool_if:NT \l_@@_layout_tate_bool
+  {
+    \RequirePackage { lltjext } \tate
+    \@@_at_doc_begin:n
+      {
+        \iow_term:n {《縦組モード》} \adjustbaseline
+      }
+  }
 %    \end{macrocode}
 %%%% ^^X <=|
 %%%% ^^X 補正用單位 |=>
@@ -1203,10 +1211,10 @@ NianCLS, 年文檔類
 % 同时对\verb|\@ptsize|采取同bxjs及ltj文档类相同之策略。「馀」
 %    \begin{macrocode}
 \dim_compare:nNnT
-  { \mpt } < { 1 \p@ }
+  { \mpt } < { \p@ }
   { \tl_set:Nn \@ptsize { -20 } }
 \dim_compare:nNnT
-  { \mpt } = { 1 \p@ }
+  { \mpt } = { \p@ }
   { \tl_set:Nn \@ptsize { 0 } }
 \dim_compare:nNnT
   { \mpt } = { 1.095 \p@ }
@@ -1244,57 +1252,8 @@ NianCLS, 年文檔類
 \bool_if:NT \l_@@_font_xreal_bool
   { \legacy_if_set_true:n { xreal } }
 \ifxreal
-  \ExplSyntaxOff
-    \expandafter\let\csname TU/lmr/m/n/10\endcsname\relax
-    \expandafter\let\csname OMX/cmex/m/n/10\endcsname\relax
-    \newluafunction\ncls@magnify@font@calc
-    \begingroup
-      \catcode`\%=12\catcode`\$=12
-      \xdef\regex{%.0$}
-    \endgroup
-    \directlua%
-      {
-        local mpt = tex.getdimen('mpt')/65536
-        lua.get_functions_table()[\the\ncls@magnify@font@calc] = function()
-          tex.sprint(-2, math.floor(0.5 + mpt * tex.getdimen(luatexbase.registernumber 'dimen@')))
-        end
-        function luatexja.ncls_unmagnify_fsize(e)
-          local s = luatexja.print_scaled(math.floor(0.5 + e / mpt * 65536))
-          tex.sprint(-2, (s:match('\regex')) and s:sub(1, -3) or s)
-        end
-      }
-    \global\let\regex\@undefined
-    \def\ncls@magnify@external@font#1 at#2 at#3\@nil%
-      {
-        \def\@tempa{#1}\def\@tempb{#2}
-        \ifx\@tempb\@empty
-          \edef\tempb{
-            scaled\directlua{tex.sprint(-2, math.floor(0.5 + \csname l_@@_font_magscale_tl\endcsname * 1000))}
-          }
-        \else
-          \dimen@\@tempb\relax
-          \edef\@tempb{ at\luafunction\ncls@magnify@font@calc sp}
-        \fi
-        \edef\@tempa{\def\noexpand\external@font{\@tempa\@tempb}}
-      }
-    \let\ncls@orig@get@external@font\get@external@font
-    \def\get@external@font%
-      {
-        \edef\f@size{\directlua{luatexja.ncls_unmagnify_fsize(\f@size)}}
-        \ncls@orig@get@external@font
-        \begingroup
-          \edef\@tempa{\external@font\space at\space at}
-          \expandafter\ncls@magnify@external@font\@tempa\@nil
-          \expandafter%
-        \endgroup%
-        \@tempa
-      }
-  \ExplSyntaxOn
-\fi
-%<*obsolete>
-\ifxreal
-  % \exp_after:wN \cs_set_eq:NN \cs:w~TU/lmr/m/n/10 \cs_end: \scan_stop:
-  % \exp_after:wN \cs_set_eq:NN \cs:w~OMX/cmex/m/n/10 \cs_end: \scan_stop:
+  \exp_after:wN \cs_set_eq:NN \cs:w~TU/lmr/m/n/10 \cs_end: \scan_stop:
+  \exp_after:wN \cs_set_eq:NN \cs:w~OMX/cmex/m/n/10 \cs_end: \scan_stop:
   \@@_luafunc_new:N \@@_magnify_font_calc
   \group_begin:
     \char_set_catcode_space:n { 32 }
@@ -1331,7 +1290,7 @@ NianCLS, 年文檔類
         {
           \dim_set:Nn \dimen@ { \tl_use:N \l_tmpb_tl }
           \tl_set:Nx \l_tmpb_tl
-            { at \@@_luafunc_use:N \@@_magnify_font_calc~sp }
+            { \c_space_tl~at \@@_luafunc_use:N \@@_magnify_font_calc~sp }
         }
       \tl_set:Nx \l_tmpa_tl
         {
@@ -1353,6 +1312,55 @@ NianCLS, 年文檔類
       \group_end:
       \l_tmpa_tl
     }
+\fi
+%<*obsolete>
+\ifxreal
+  \ExplSyntaxOff
+    \expandafter\let\csname TU/lmr/m/n/10\endcsname\relax
+    \expandafter\let\csname OMX/cmex/m/n/10\endcsname\relax
+    \newluafunction\ncls@magnify@font@calc
+    \begingroup
+      \catcode`\%=12\catcode`\$=12
+      \xdef\regex{%.0$}
+    \endgroup
+    \directlua%
+      {
+        local mpt = tex.getdimen('mpt')/65536
+        lua.get_functions_table()[\the\ncls@magnify@font@calc] = function()
+          tex.sprint(-2, math.floor(0.5 + mpt * tex.getdimen(luatexbase.registernumber 'dimen@')))
+        end
+        function luatexja.ncls_unmagnify_fsize(e)
+          local s = luatexja.print_scaled(math.floor(0.5 + e / mpt * 65536))
+          tex.sprint(-2, (s:match('\regex')) and s:sub(1, -3) or s)
+        end
+      }
+    \global\let\regex\@undefined
+    \def\ncls@magnify@external@font#1 at#2 at#3\@nil%
+      {
+        \def\@tempa{#1}\def\@tempb{#2}
+        \ifx\@tempb\@empty
+          \edef\tempb{
+            scaled\directlua{tex.sprint(-2, math.floor(0.5 + \csname l_@@_font_magscale_tl\endcsname * 1000))}
+          }
+        \else
+          \dimen@\@tempb\relax
+          \edef\@tempb{\space at\luafunction\ncls@magnify@font@calc sp}
+        \fi
+        \edef\@tempa{\def\noexpand\external@font{\@tempa\@tempb}}
+      }
+    \let\ncls@orig@get@external@font\get@external@font
+    \def\get@external@font%
+      {
+        \edef\f@size{\directlua{luatexja.ncls_unmagnify_fsize(\f@size)}}
+        \ncls@orig@get@external@font
+        \begingroup
+          \edef\@tempa{\external@font\space at\space at}
+          \expandafter\ncls@magnify@external@font\@tempa\@nil
+          \expandafter%
+        \endgroup%
+        \@tempa
+      }
+  \ExplSyntaxOn
 \fi
 %</obsolete>
 %    \end{macrocode}
@@ -1608,11 +1616,13 @@ NianCLS, 年文檔類
   }
 %</obsolete>
 %    \end{macrocode}
-% 然后先初始化字体，然后找一个字测字框数据。因为前面有一些需要在导言区之后被调用的宏，所以用到了\verb|\ExplSyntaxOff|，为了防止之后环境失效再次开启环境。
+% 初始化字体。
 %    \begin{macrocode}
 \bool_if:NT \l_@@_layout_tate_bool { \tate }
-\ExplSyntaxOff
 \mcfamily \selectfont \normalsize
+%    \end{macrocode}
+% 在初始化后重新开启环境，并测量字框数据。
+%    \begin{macrocode}
 \ExplSyntaxOn
 \hbox_set:Nn \l_tmpa_box { 年 }
 \dim_set:Nn \Cht { \box_ht:N \l_tmpa_box }
@@ -1630,8 +1640,10 @@ NianCLS, 年文檔類
 \@@_macro_release:N \l_@@_font_langfeat_tl
 \@@_macro_release:N \l_@@_font_mincho_tl
 \@@_macro_release:N \l_@@_font_gothic_tl
-% \@@_macro_release:N \l_@@_font_kanjiskip_tl
-% \@@_macro_release:N \l_@@_font_xkanjiskip_tl
+%<*obsolete>
+\@@_macro_release:N \l_@@_font_kanjiskip_tl
+\@@_macro_release:N \l_@@_font_xkanjiskip_tl
+%</obsolete>
 \@@_macro_release:N \l_@@_font_cjscale_tl
 \@@_macro_release:N \l_@@_jfm_hanging_tl
 \@@_macro_release:N \l_@@_jfm_linegap_tl
@@ -1639,7 +1651,7 @@ NianCLS, 年文檔類
 \@@_macro_release:N \l_@@_font_fallback_bool
 \@@_macro_release:N \l_@@_font_fallback_tl
 \@@_macro_release:N \@@_font_declareshape:nnnn
-% \@@_macro_release:N \@@_font_setsize:nnn
+%<obsolete> \@@_macro_release:N \@@_font_setsize:nnn
 %    \end{macrocode}
 %%%% ^^X <=|
 %%%%% ^^X <=|

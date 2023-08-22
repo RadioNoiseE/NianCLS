@@ -74,12 +74,10 @@
   { \seq_gput_right:Nn \g__ncls_aftercls_del_seq { #1 } }
 \__ncls_at_preamble_end:n
   {
-    \ExplSyntaxOn
-    \cs_undefine:N \g__ncls_aftercls_del_seq
-    \ExplSyntaxOff
+  \cs_undefine:N \g__ncls_aftercls_del_seq
   }
-\cs_new_protected:Npn \__ncls_luafunc_new:N { \newluafunction }
-\cs_new_protected:Npn \__ncls_luafunc_use:N { \luafunction }
+\cs_new:Npn \__ncls_luafunc_new:N { \newluafunction }
+\cs_new:Npn \__ncls_luafunc_use:N { \luafunction }
 \msg_new:nnnn { ncls } { unknown-choice }
   { Unknown~choice~given~to~key~`#1'. }
   {
@@ -192,8 +190,32 @@
     basis .initial:n = { cjk }
   }
 %%%% ^^X <=|
-%%%% ^^X 文檔類型 |=>
+%%%% ^^X 分欄 |=>
 \bool_new:N \l__ncls_layout_restonecol_bool
+\keys_define:nn { ncls }
+  {
+    column .choice:,
+    column / one .code:n = { \bool_set_false:N \l__ncls_layout_restonecol_bool },
+    column / two .code:n = { \bool_set_true:N \l__ncls_layout_restonecol_bool },
+    column / unknown .code:n =
+      {
+        \msg_error:nnxxx { ncls } { unknown-choice }
+          { column }
+          { one,~two }
+          { \exp_not:n { #1 } }
+      },
+    column .value_required:n = true,
+    column .initial:n = { one }
+  }
+\tl_new:N \l__ncls_layout_column_gap_tl
+\keys_define:nn { ncls }
+  {
+    column_gap .tl_set:N = \l__ncls_layout_column_gap_tl,
+    column_gap .value_required:n = true,
+    column_gap .initial:n = { 2 \zw }
+  }
+%%%% ^^X <=|
+%%%% ^^X 文檔類型 |=>
 \bool_new:N \l__ncls_layout_twoside_bool
 \bool_new:N \l__ncls_layout_mparswitch_bool
 \bool_new:N \l__ncls_layout_titlepage_bool
@@ -232,30 +254,6 @@
       },
     doctype .value_required:n = true,
     doctype .initial:n = { article }
-  }
-%%%% ^^X <=|
-%%%% ^^X 分欄 |=>
-\keys_define:nn { ncls }
-  {
-    column .choice:,
-    column / one .code:n = { \bool_set_false:N \l__ncls_layout_restonecol_bool },
-    column / two .code:n = { \bool_set_true:N \l__ncls_layout_restonecol_bool },
-    column / unknown .code:n =
-      {
-        \msg_error:nnxxx { ncls } { unknown-choice }
-          { column }
-          { one,~two }
-          { \exp_not:n { #1 } }
-      },
-    column .value_required:n = true,
-    column .initial:n = { one }
-  }
-\tl_new:N \l__ncls_layout_column_gap_tl
-\keys_define:nn { ncls }
-  {
-    column_gap .tl_set:N = \l__ncls_layout_column_gap_tl,
-    column_gap .value_required:n = true,
-    column_gap .initial:n = { 2 \zw }
   }
 %%%% ^^X <=|
 %%%% ^^X 單雙面 |=>
@@ -463,14 +461,17 @@
 %%%% ^^X <=|
 %%%% ^^X 字體設定 |=>
 \tl_new:N \l__ncls_font_mincho_tl
-\tl_new:N \l__ncls_font_gothic_tl
 \keys_define:nn { ncls }
   {
     mincho .tl_set:N = \l__ncls_font_mincho_tl,
-    gothic .tl_set:N = \l__ncls_font_gothic_tl,
     mincho .value_required:n = true,
+    mincho .initial:n = { HaranoAji Mincho }
+  }
+\tl_new:N \l__ncls_font_gothic_tl
+\keys_define:nn { ncls }
+  {
+    gothic .tl_set:N = \l__ncls_font_gothic_tl,
     gothic .value_required:n = true,
-    mincho .initial:n = { HaranoAji Mincho },
     gothic .initial:n = { HaranoAji Gothic }
   }
 %%%% ^^X <=|
@@ -680,14 +681,6 @@
 %%%%% ^^X <=|
 %%%%% ^^X 選項設定 |=>
 %%%% ^^X 組版方向設定 |=>
-\bool_if:NT \l__ncls_layout_tate_bool
-  {
-    \RequirePackage { lltjext } \tate
-    \__ncls_at_doc_begin:n
-      {
-        \iow_term:n {《縦組モード》} \adjustbaseline
-      }
-  }
 %%%% ^^X <=|
 %%%% ^^X 單雙欄設定 |=>
 \bool_if:NTF \l__ncls_layout_restonecol_bool
@@ -732,6 +725,7 @@
 %%%% ^^X <=|
 %%%% ^^X 內存管理 |=>
 \__ncls_macro_release:N \l__ncls_layout_tate_bool
+\__ncls_macro_release:N \l__ncls_layout_english_bool
 \__ncls_macro_release:N \l__ncls_layout_restonecol_bool
 \__ncls_macro_release:N \l__ncls_layout_column_gap_tl
 \__ncls_macro_release:N \l__ncls_layout_twoside_bool
@@ -788,14 +782,22 @@
     lineend = extended,
     priority = true
   ]
+\bool_if:NT \l__ncls_layout_tate_bool
+  {
+    \RequirePackage { lltjext } \tate
+    \__ncls_at_doc_begin:n
+      {
+        \iow_term:n {《縦組モード》} \adjustbaseline
+      }
+  }
 %%%% ^^X <=|
 %%%% ^^X 補正用單位 |=>
 \dim_set:Nn \mpt { \l__ncls_font_magscale_tl \p@ }
 \dim_compare:nNnT
-  { \mpt } < { 1 \p@ }
+  { \mpt } < { \p@ }
   { \tl_set:Nn \@ptsize { -20 } }
 \dim_compare:nNnT
-  { \mpt } = { 1 \p@ }
+  { \mpt } = { \p@ }
   { \tl_set:Nn \@ptsize { 0 } }
 \dim_compare:nNnT
   { \mpt } = { 1.095 \p@ }
@@ -820,52 +822,66 @@
 \bool_if:NT \l__ncls_font_xreal_bool
   { \legacy_if_set_true:n { xreal } }
 \ifxreal
-  \ExplSyntaxOff
-    \expandafter\let\csname TU/lmr/m/n/10\endcsname\relax
-    \expandafter\let\csname OMX/cmex/m/n/10\endcsname\relax
-    \newluafunction\ncls@magnify@font@calc
-    \begingroup
-      \catcode`\%=12\catcode`\$=12
-      \xdef\regex{%.0$}
-    \endgroup
-    \directlua%
+  \exp_after:wN \cs_set_eq:NN \cs:w~TU/lmr/m/n/10 \cs_end: \scan_stop:
+  \exp_after:wN \cs_set_eq:NN \cs:w~OMX/cmex/m/n/10 \cs_end: \scan_stop:
+  \__ncls_luafunc_new:N \__ncls_magnify_font_calc
+  \group_begin:
+    \char_set_catcode_space:n { 32 }
+    \lua_now:e
       {
         local mpt = tex.getdimen('mpt')/65536
-        lua.get_functions_table()[\the\ncls@magnify@font@calc] = function()
+        lua.get_functions_table()[\the\__ncls_magnify_font_calc] = function()
           tex.sprint(-2, math.floor(0.5 + mpt * tex.getdimen(luatexbase.registernumber 'dimen@')))
         end
+      }
+    \group_begin:
+      \char_set_catcode_other:n { 36 }
+      \char_set_catcode_other:n { 37 }
+      \tl_gset:Nn \g_tmpa_tl { %.0$ }
+    \group_end:
+    \lua_now:e
+      {
+        local mpt = tex.getdimen('mpt')/65536
         function luatexja.ncls_unmagnify_fsize(e)
           local s = luatexja.print_scaled(math.floor(0.5 + e / mpt * 65536))
-          tex.sprint(-2, (s:match('\regex')) and s:sub(1, -3) or s)
+          tex.sprint(-2, (s:match('\g_tmpa_tl')) and s:sub(1, -3) or s)
         end
       }
-    \global\let\regex\@undefined
-    \def\ncls@magnify@external@font#1 at#2 at#3\@nil%
-      {
-        \def\@tempa{#1}\def\@tempb{#2}
-        \ifx\@tempb\@empty
-          \edef\tempb{
-            scaled\directlua{tex.sprint(-2, math.floor(0.5 + \csname l__ncls_font_magscale_tl\endcsname * 1000))}
-          }
-        \else
-          \dimen@\@tempb\relax
-          \edef\@tempb{ at\luafunction\ncls@magnify@font@calc sp}
-        \fi
-        \edef\@tempa{\def\noexpand\external@font{\@tempa\@tempb}}
-      }
-    \let\ncls@orig@get@external@font\get@external@font
-    \def\get@external@font%
-      {
-        \edef\f@size{\directlua{luatexja.ncls_unmagnify_fsize(\f@size)}}
-        \ncls@orig@get@external@font
-        \begingroup
-          \edef\@tempa{\external@font\space at\space at}
-          \expandafter\ncls@magnify@external@font\@tempa\@nil
-          \expandafter%
-        \endgroup%
-        \@tempa
-      }
-  \ExplSyntaxOn
+  \group_end:
+  \cs_new:Npn \__ncls_magnify_external_font:w #1~at #2~at #3 \q_nil
+    {
+      \tl_set:Nn \l_tmpa_tl { #1 }
+      \tl_set:Nn \l_tmpb_tl { #2 }
+      \tl_if_empty:NTF \l_tmpb_tl
+        {
+          \tl_set:Nx \l_tmpb_tl
+            { scaled \lua_now:e { tex.sprint(-2, math.floor(0.5 + \l__ncls_font_magscale_tl * 1000)) } }
+        }
+        {
+          \dim_set:Nn \dimen@ { \tl_use:N \l_tmpb_tl }
+          \tl_set:Nx \l_tmpb_tl
+            { \c_space_tl~at \__ncls_luafunc_use:N \__ncls_magnify_font_calc~sp }
+        }
+      \tl_set:Nx \l_tmpa_tl
+        {
+          \tl_set:Nn \exp_not:N \external@font
+            { \tl_use:N \l_tmpa_tl \tl_use:N \l_tmpb_tl }
+        }
+    }
+  \cs_new_eq:NN \__ncls_get_external_font_orig: \get@external@font
+  \cs_set:Npn \get@external@font
+    {
+      \tl_set:Nx \f@size
+        { \lua_now:e { luatexja.ncls_unmagnify_fsize(\f@size) } }
+      \__ncls_get_external_font_orig:
+      \group_begin:
+        \tl_set:Nx \l_tmpa_tl
+          { \external@font \tl_use:N \c_space_tl~at \tl_use:N \c_space_tl~at }
+        \exp_after:wN \__ncls_magnify_external_font:w \l_tmpa_tl \q_nil
+        \exp_after:wN
+      \group_end:
+      \l_tmpa_tl
+    }
 \fi
 %%%% ^^X <=|
 %%%% ^^X 回滾字體可選特性 |=>
@@ -998,7 +1014,6 @@
     \let \@listi \@listI
   }
 \bool_if:NT \l__ncls_layout_tate_bool { \tate }
-\ExplSyntaxOff
 \mcfamily \selectfont \normalsize
 \ExplSyntaxOn
 \hbox_set:Nn \l_tmpa_box { 年 }

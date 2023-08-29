@@ -15,7 +15,7 @@
 %%%%% ^^X 載入{\LaTeX3}並檢驗依賴 |=>
 \NeedsTeXFormat{LaTeX2e}
 \RequirePackage{expl3}
-\ProvidesExplClass{niancls}{2023-08-05}{0.0.0}{Nian Document Class}
+\ProvidesExplClass{niancls}{2023-08-28}{0.0.0}{Nian Document Class}
 \prop_gput:Nnn \g_msg_module_name_prop { ncls } { niancls }
 \cs_if_exist:NF \NewDocumentCommand
   { \RequirePackage { xparse } }
@@ -66,9 +66,9 @@
 \newif \ifnpream \npreamtrue
 \__ncls_at_doc_begin:n { \npreamfalse }
 \cs_new:Npn \ContExplOn
-  { \if npream \else \ExplSyntaxOn \fi }
+  { \ifnpream \else \ExplSyntaxOn \fi } %FIXME
 \cs_new:Npn \ContExplOff
-  { \if npream \else \ExplSyntaxOff \fi }
+  { \ifnpream \else \ExplSyntaxOff \fi } %FIXME
 \seq_new:N \g__ncls_aftercls_del_seq
 \cs_new:Nn \__ncls_macro_release:N
   { \seq_gput_right:Nn \g__ncls_aftercls_del_seq { #1 } }
@@ -408,24 +408,24 @@
 \keys_define:nn { ncls }
   {
     fontsize .choice:,
-    fontsize /  7pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 0.6940 } },
-    fontsize /  8pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 0.8330 } },
-    fontsize /  9pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 0.9130 } },
-    fontsize / 10pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 1.0000 } },
+    fontsize / 7pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 0.694 } },
+    fontsize / 8pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 0.833 } },
+    fontsize / 9pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 0.913 } },
+    fontsize / 10pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 1 } },
     fontsize / 11pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 1.0953 } },
-    fontsize / 12pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 1.2000 } },
-    fontsize / 13pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 1.3000 } },
-    fontsize / 14pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 1.4400 } },
-    fontsize / 15pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 1.5000 } },
-    fontsize / 16pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 1.6000 } },
-    fontsize / 17pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 1.7280 } },
-    fontsize / 20pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 2.0000 } },
-    fontsize / 21pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 2.0740 } },
-    fontsize / 24pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 2.4000 } },
-    fontsize / 25pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 2.4880 } },
-    fontsize / 30pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 2.9860 } },
-    fontsize / 36pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 3.5830 } },
-    fontsize / 43pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 4.3000 } },
+    fontsize / 12pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 1.2 } },
+    fontsize / 13pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 1.3 } },
+    fontsize / 14pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 1.44 } },
+    fontsize / 15pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 1.5 } },
+    fontsize / 16pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 1.6 } },
+    fontsize / 17pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 1.728 } },
+    fontsize / 20pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 2. } },
+    fontsize / 21pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 2.074 } },
+    fontsize / 24pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 2.4 } },
+    fontsize / 25pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 2.488 } },
+    fontsize / 30pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 2.986 } },
+    fontsize / 36pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 3.583 } },
+    fontsize / 43pt .code:n = { \tl_set:Nn \l__ncls_font_magscale_tl { 4.3 } },
     fontsize / unknown .code:n =
       {
         \msg_error:nnxxx { ncls } { unknown-choice }
@@ -516,7 +516,7 @@
 \keys_define:nn { ncls }
   {
     magstyle .choice:,
-    magstyle / real .code:n = { \bool_set_false:N \l__ncls_font_xreal_bool },
+    magstyle / nil .code:n = { \bool_set_false:N \l__ncls_font_xreal_bool },
     magstyle / xreal .code:n = { \bool_set_true:N \l__ncls_font_xreal_bool },
     magstyle .value_required:n = true,
     magstyle .initial:n = { xreal }
@@ -535,6 +535,168 @@
     fallback .value_required:n = true
   }
 %%%% ^^X <=|
+%%%% ^^X 字體排印參數 |=>
+\clist_map_inline:nn { HUGE, Huge, huge, LARGE, Large, large, normal, small, footnote, script, tiny }
+  {
+    \clist_map_inline:nn { abovedisplay, abovedisplayshort, belowdisplay, belowdisplayshort }
+      {
+        \tl_new:c { l__ncls_font_#1 size_##1 skip_tl }
+        \keys_define:nn { ncls }
+          {
+            #1 size / ##1 skip .tl_set:c = { l__ncls_font_#1 size_##1 skip_tl },
+            #1 size / ##1 skip .value_required:n = true
+          }
+      }
+  }
+\keys_define:nn { ncls }
+  {
+    HUGEsize / abovedisplayskip .initial:n = { 28 \mpt~plus 8 \mpt~minus 9 \mpt },
+    HUGEsize / abovedisplayshortskip .initial:n = { 14 \mpt~plus 5 \mpt },
+    HUGEsize / belowdisplayskip .initial:n = { 28 \mpt~plus 8 \mpt~minus 9 \mpt },
+    HUGEsize / belowdisplayshortskip .initial:n = { 14 \mpt~plus 5 \mpt },
+    Hugesize / abovedisplayskip .initial:n = { 25 \mpt~plus 4 \mpt~minus 5 \mpt },
+    Hugesize / abovedisplayshortskip .initial:n = { 9 \mpt~plus 4 \mpt },
+    Hugesize / belowdisplayskip .initial:n = { 25 \mpt~plus 4 \mpt~minus 5 \mpt },
+    Hugesize / belowdisplayshortskip .initial:n = { 9 \mpt~plus 4 \mpt },
+    hugesize / abovedisplayskip .initial:n = { 23 \mpt~plus 7 \mpt~minus 6 \mpt },
+    hugesize / abovedisplayshortskip .initial:n = { 7 \mpt~plus 3 \mpt },
+    hugesize / belowdisplayskip .initial:n = { 23 \mpt~plus 7 \mpt~minus 6 \mpt },
+    hugesize / belowdisplayshortskip .initial:n = { 7 \mpt~plus 3 \mpt },
+    LARGEsize / abovedisplayskip .initial:n = { 20 \mpt~plus 6 \mpt~minus 5 \mpt },
+    LARGEsize / abovedisplayshortskip .initial:n = { 5 \mpt~plus 3 \mpt },
+    LARGEsize / belowdisplayskip .initial:n = { 20 \mpt~plus 6 \mpt~minus 5 \mpt },
+    LARGEsize / belowdisplayshortskip .initial:n = { 5 \mpt~plus 3 \mpt },
+    Largesize / abovedisplayskip .initial:n = { 16 \mpt~plus 6 \mpt~minus 6 \mpt },
+    Largesize / abovedisplayshortskip .initial:n = { 3 \mpt~plus 2 \mpt },
+    Largesize / belowdisplayskip .initial:n = { 16 \mpt~plus 6 \mpt~minus 6 \mpt },
+    Largesize / belowdisplayshortskip .initial:n = { 3 \mpt~plus 2 \mpt },
+    largesize / abovedisplayskip .initial:n = { 13 \mpt~plus 4 \mpt~minus 5 \mpt },
+    largesize / abovedisplayshortskip .initial:n = { 2 \mpt~plus 2 \mpt },
+    largesize / belowdisplayskip .initial:n = { 13 \mpt~plus 4 \mpt~minus 5 \mpt },
+    largesize / belowdisplayshortskip .initial:n = { 2 \mpt~plus 2 \mpt },
+    normalsize / abovedisplayskip .initial:n = { 11 \mpt~plus 3 \mpt~minus 4 \mpt },
+    normalsize / abovedisplayshortskip .initial:n = { 0 \mpt~plus 3 \mpt },
+    normalsize / belowdisplayskip .initial:n = { 9 \mpt~plus 3\mpt~minus 4 \mpt },
+    normalsize / belowdisplayshortskip .initial:n = { 9 \mpt~plus 3 \mpt~minus 4 \mpt },
+    smallsize / abovedisplayskip .initial:n = { 9 \mpt~plus 3 \mpt~minus 4 \mpt },
+    smallsize / abovedisplayshortskip .initial:n = { 0 \mpt~plus 3 \mpt },
+    smallsize / belowdisplayskip .initial:n = { 9 \mpt~plus 3 \mpt~minus 4 \mpt },
+    smallsize / belowdisplayshortskip .initial:n = { 0 \mpt~plus 3 \mpt },
+    footnotesize / abovedisplayskip .initial:n = { 6 \mpt~plus 2 \mpt~minus 3 \mpt },
+    footnotesize / abovedisplayshortskip .initial:n = { 0 \mpt~plus 2 \mpt },
+    footnotesize / belowdisplayskip .initial:n = { 6 \mpt~plus 2 \mpt~minus 3 \mpt },
+    footnotesize / belowdisplayshortskip .initial:n = { 0 \mpt~plus 2 \mpt },
+    scriptsize / abovedisplayskip .initial:n = { 4 \mpt~plus 1 \mpt~minus 2 \mpt },
+    scriptsize / abovedisplayshortskip .initial:n = { 0 \mpt~plus 1 \mpt },
+    scriptsize / belowdisplayskip .initial:n = { 4 \mpt~plus 1 \mpt~minus 2 \mpt },
+    scriptsize / belowdisplayshortskip .initial:n = { 0 \mpt~plus 1 \mpt },
+    tinysize / abovedisplayskip .initial:n = { 2 \mpt~minus 1 \mpt },
+    tinysize / abovedisplayshortskip .initial:n = { 0 \mpt~plus 1 \mpt },
+    tinysize / belowdisplayskip .initial:n = { 2 \mpt~minus 1 \mpt },
+    tinysize / belowdisplayshortskip .initial:n = { 0 \mpt~plus 1 \mpt }
+  }
+%%%% ^^X <=|
+%%%% ^^X 字體尺寸設定 |=>
+\clist_map_inline:nn { HUGE, Huge, huge, LARGE, Large, large, normal, small, footnote, script, tiny }
+  {
+    \tl_new:c { l__ncls_font_#1 size_sizeinfo_tl }
+    \keys_define:nn { ncls }
+      {
+        #1 size / size .tl_set:c = { l__ncls_font_#1 size_sizeinfo_tl },
+        #1 size / size .value_required:n = true
+      }
+  }
+\keys_define:nn { ncls }
+  {
+    HUGEsize / size .initial:n = { 30 },
+    Hugesize / size .initial:n = { 24.88 },
+    hugesize / size .initial:n = { 20.74 },
+    LARGEsize / size .initial:n = { 17.28 },
+    Largesize / size .initial:n = { 14.4 },
+    largesize / size .initial:n = { 11 },
+    normalsize / size .initial:n = { 10 },
+    smallsize / size .initial:n = { 9 },
+    footnotesize / size .initial:n = { 8 },
+    scriptsize / size .initial:n = { 7 },
+    tinysize / size .initial:n = { 5 }
+  }
+%%%% <=|
+%%%% ^^X 字體行距設定 |=>
+\clist_map_inline:nn { HUGE, Huge, huge, LARGE, Large, large, normal, small, footnote, script, tiny }
+  {
+    \clist_map_inline:nn { baseline, narrowbaseline }
+      {
+        \tl_new:c { l__ncls_font_#1 size_##1 skip_tl }
+        \keys_define:nn { ncls }
+          {
+            #1 size / ##1 skip .tl_set:c = { l__ncls_font_#1 size_##1 skip_tl },
+            #1 size / ##1 skip .value_required:n = true
+          }
+      }
+  }
+\keys_define:nn { ncls }
+  {
+    HUGEsize / baselineskip .initial:n = { 40 },
+    HUGEsize / narrowbaselineskip .initial:n = { 40 },
+    Hugesize / baselineskip .initial:n = { 33 },
+    Hugesize / narrowbaselineskip .initial:n = { 33 },
+    hugesize / baselineskip .initial:n = { 28 },
+    hugesize / narrowbaselineskip .initial:n = { 28 },
+    LARGEsize / baselineskip .initial:n = { 25 },
+    LARGEsize / narrowbaselineskip .initial:n = { 25 },
+    Largesize / baselineskip .initial:n = { 21 },
+    Largesize / narrowbaselineskip .initial:n = { 21 },
+    largesize / baselineskip .initial:n = { 17 },
+    largesize / narrowbaselineskip .initial:n = { 17 },
+    normalsize / baselineskip .initial:n = { 16 },
+    normalsize / narrowbaselineskip .initial:n = { 12 },
+    smallsize / baselineskip .initial:n = { 13 },
+    smallsize / narrowbaselineskip .initial:n = { 11 },
+    footnotesize / baselineskip .initial:n = { 11 },
+    footnotesize / narrowbaselineskip .initial:n = { 9.5 },
+    scriptsize / baselineskip .initial:n = { 8 },
+    scriptsize / narrowbaselineskip .initial:n = { 8 },
+    tinysize / baselineskip .initial:n = { 6 },
+    tinysize / narrowbaselineskip .initial:n = { 6 }
+  }
+%%%% ^^X <=|
+%%%% ^^X 字體尺寸其他參數 |=>
+\clist_map_inline:nn { HUGE, Huge, huge, LARGE, Large, large, normal, small, footnote, script, tiny }
+  {
+    \tl_new:c { l__ncls_font_#1 size_listinfo_tl }
+    \keys_define:nn { ncls }
+      {
+        #1 size / list .tl_set:c = { l__ncls_font_#1 size_listinfo_tl },
+        #1 size / list .value_required:n = true
+      }
+  }
+\keys_define:nn { ncls }
+  {
+    HUGEsize / list .initial:n = { \relax },
+    Hugesize / list .initial:n = { \relax },
+    hugesize / list .initial:n = { \relax },
+    LARGEsize / list .initial:n = { \relax },
+    Largesize / list .initial:n = { \relax },
+    largesize / list .initial:n = { \relax },
+    normalsize / list .initial:n = { \@listI },
+    smallsize / list .initial:n =
+      {
+        \leftmargin = \leftmargini
+        \topsep = \z@
+        \parsep = \z@
+        \itemsep = \parsep
+      },
+    footnotesize / list .initial:n =
+      {
+        \leftmargin = \leftmargini
+        \topsep = \z@
+        \parsep = \z@
+        \itemsep = \parsep
+      },
+    scriptsize / list .initial:n = { \relax },
+    tinysize / list .initial:n = { \relax }
+  }
+%%%% <=|
 %%%%% ^^X <=|
 %%%%% ^^X 初始化處理 |=>
 \__ncls_keyoptions_process:n { ncls }
@@ -559,34 +721,34 @@
   }
 %%%% ^^X <=|
 %%%% ^^X 尺寸參數設定 |=>
-\__ncls_paper_addsize:nnn { a0  } {  841 mm } { 1189 mm }
-\__ncls_paper_addsize:nnn { a1  } {  594 mm } {  841 mm }
-\__ncls_paper_addsize:nnn { a2  } {  420 mm } {  594 mm }
-\__ncls_paper_addsize:nnn { a3  } {  297 mm } {  420 mm }
-\__ncls_paper_addsize:nnn { a4  } {  210 mm } {  297 mm }
-\__ncls_paper_addsize:nnn { a5  } {  148 mm } {  210 mm }
-\__ncls_paper_addsize:nnn { a6  } {  105 mm } {  148 mm }
-\__ncls_paper_addsize:nnn { b0  } { 1000 mm } { 1414 mm }
-\__ncls_paper_addsize:nnn { b1  } {  707 mm } { 1000 mm }
-\__ncls_paper_addsize:nnn { b2  } {  500 mm } {  707 mm }
-\__ncls_paper_addsize:nnn { b3  } {  353 mm } {  500 mm }
-\__ncls_paper_addsize:nnn { b4  } {  250 mm } {  353 mm }
-\__ncls_paper_addsize:nnn { b5  } {  176 mm } {  250 mm }
-\__ncls_paper_addsize:nnn { b6  } {  125 mm } {  176 mm }
-\__ncls_paper_addsize:nnn { c0  } {  917 mm } { 1297 mm }
-\__ncls_paper_addsize:nnn { c1  } {  648 mm } {  917 mm }
-\__ncls_paper_addsize:nnn { c2  } {  458 mm } {  648 mm }
-\__ncls_paper_addsize:nnn { c3  } {  324 mm } {  458 mm }
-\__ncls_paper_addsize:nnn { c4  } {  229 mm } {  324 mm }
-\__ncls_paper_addsize:nnn { c5  } {  162 mm } {  229 mm }
-\__ncls_paper_addsize:nnn { c6  } {  114 mm } {  162 mm }
+\__ncls_paper_addsize:nnn { a0 } { 841 mm } { 1189 mm }
+\__ncls_paper_addsize:nnn { a1 } { 594 mm } { 841 mm }
+\__ncls_paper_addsize:nnn { a2 } { 420 mm } { 594 mm }
+\__ncls_paper_addsize:nnn { a3 } { 297 mm } { 420 mm }
+\__ncls_paper_addsize:nnn { a4 } { 210 mm } { 297 mm }
+\__ncls_paper_addsize:nnn { a5 } { 148 mm } { 210 mm }
+\__ncls_paper_addsize:nnn { a6 } { 105 mm } { 148 mm }
+\__ncls_paper_addsize:nnn { b0 } { 1000 mm } { 1414 mm }
+\__ncls_paper_addsize:nnn { b1 } { 707 mm } { 1000 mm }
+\__ncls_paper_addsize:nnn { b2 } { 500 mm } { 707 mm }
+\__ncls_paper_addsize:nnn { b3 } { 353 mm } { 500 mm }
+\__ncls_paper_addsize:nnn { b4 } { 250 mm } { 353 mm }
+\__ncls_paper_addsize:nnn { b5 } { 176 mm } { 250 mm }
+\__ncls_paper_addsize:nnn { b6 } { 125 mm } { 176 mm }
+\__ncls_paper_addsize:nnn { c0 } { 917 mm } { 1297 mm }
+\__ncls_paper_addsize:nnn { c1 } { 648 mm } { 917 mm }
+\__ncls_paper_addsize:nnn { c2 } { 458 mm } { 648 mm }
+\__ncls_paper_addsize:nnn { c3 } { 324 mm } { 458 mm }
+\__ncls_paper_addsize:nnn { c4 } { 229 mm } { 324 mm }
+\__ncls_paper_addsize:nnn { c5 } { 162 mm } { 229 mm }
+\__ncls_paper_addsize:nnn { c6 } { 114 mm } { 162 mm }
 \__ncls_paper_addsize:nnn { b0j } { 1030 mm } { 1456 mm }
-\__ncls_paper_addsize:nnn { b1j } {  728 mm } { 1030 mm }
-\__ncls_paper_addsize:nnn { b2j } {  515 mm } {  728 mm }
-\__ncls_paper_addsize:nnn { b3j } {  364 mm } {  515 mm }
-\__ncls_paper_addsize:nnn { b4j } {  257 mm } {  364 mm }
-\__ncls_paper_addsize:nnn { b5j } {  182 mm } {  257 mm }
-\__ncls_paper_addsize:nnn { b6j } {  128 mm } {  182 mm }
+\__ncls_paper_addsize:nnn { b1j } { 728 mm } { 1030 mm }
+\__ncls_paper_addsize:nnn { b2j } { 515 mm } { 728 mm }
+\__ncls_paper_addsize:nnn { b3j } { 364 mm } { 515 mm }
+\__ncls_paper_addsize:nnn { b4j } { 257 mm } { 364 mm }
+\__ncls_paper_addsize:nnn { b5j } { 182 mm } { 257 mm }
+\__ncls_paper_addsize:nnn { b6j } { 128 mm } { 182 mm }
 \__ncls_paper_addsize:nnn { screen } { 225 mm } { 180 mm }
 %%%% ^^X <=|
 %%%% ^^X 內部參數處理 |=>
@@ -960,14 +1122,14 @@
       \ContExplOff
     \fi
     \ltj@setpar@global
-    \expandafter \ltjsetkanjiskip \csname~l__ncls_font_kanjiskip_tl \endcsname
+    \expandafter \ltjsetkanjiskip \l__ncls_font_kanjiskip_tl
     \@tempskipa = \ltjgetparameter { xkanjiskip }
     \ifdim \@tempskipa > \z@
-      \expandafter \ltjsetxkanjiskip \csname~l__ncls_font_xkanjiskip_tl \endcsname
+      \expandafter \ltjsetxkanjiskip \l__ncls_font_xkanjiskip_tl
     \fi
   }
 \cs_new:Npn \ncls@fontsetsize #1 #2 #3
-  { \@setfontsize #1 { #2 } { #3 } }
+  { \@setfontsize #1 { #2 \mpt } { #3 \mpt } }
 %%%% ^^X <=|
 %%%% ^^X 行距設定 |=>
 \newif \ifnarrowbaselines
@@ -1002,20 +1164,30 @@
   }
 %%%% ^^X <=|
 %%%% ^^X 字體尺寸 |=>
-\cs_set:Npn \normalsize
+\clist_map_inline:nn { HUGE, Huge, huge, LARGE, Large, large, normal, small, footnote, script, tiny }
   {
-    \ncls@ifnarrowbaselines
-      { \ncls@fontsetsize \normalsize { 10 } { 12 } }
-      { \ncls@fontsetsize \normalsize { 10 } { 16 } }
-    \abovedisplayskip 11 \mpt plus 3 \mpt minus 4 \mpt
-    \abovedisplayshortskip \z@ plus 3 \mpt
-    \belowdisplayskip 9 \mpt plus 3 \mpt minus 4 \mpt
-    \belowdisplayshortskip \belowdisplayskip
-    \let \@listi \@listI
+    \cs_set:cpn { #1 size }
+      {
+        \ncls@ifnarrowbaselines
+          {
+            \expandafter \ncls@fontsetsize \csname~#1 size \endcsname
+            { \csname~l__ncls_font_#1 size_sizeinfo_tl \endcsname }
+            { \csname~l__ncls_font_#1 size_narrowbaselineskip_tl \endcsname }
+          }
+          {
+            \expandafter \ncls@fontsetsize \csname~#1 size \endcsname
+            { \csname~l__ncls_font_#1 size_sizeinfo_tl \endcsname }
+            { \csname~l__ncls_font_#1 size_baselineskip_tl \endcsname }
+          }
+        \abovedisplayskip = \csname~l__ncls_font_#1 size_abovedisplayskip_tl \endcsname
+        \abovedisplayshortskip = \csname~l__ncls_font_#1 size_abovedisplayshortskip_tl \endcsname
+        \belowdisplayskip = \csname~l__ncls_font_#1 size_belowdisplayskip_tl \endcsname
+        \belowdisplayshortskip = \csname~l__ncls_font_#1 size_belowdisplayshortskip_tl \endcsname
+        \def \@listi { \csname~l__ncls_font_#1 size_listinfo_tl \endcsname }
+      }
   }
 \bool_if:NT \l__ncls_layout_tate_bool { \tate }
 \mcfamily \selectfont \normalsize
-\ExplSyntaxOn
 \hbox_set:Nn \l_tmpa_box { 年 }
 \dim_set:Nn \Cht { \box_ht:N \l_tmpa_box }
 \dim_set:Nn \Cdp { \box_dp:N \l_tmpa_box }

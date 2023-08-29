@@ -93,7 +93,7 @@ NianCLS, 年文檔類
 %    \begin{macrocode}
 \NeedsTeXFormat{LaTeX2e}
 \RequirePackage{expl3}
-\ProvidesExplClass{niancls}{2023-08-05}{0.0.0}{Nian Document Class}
+\ProvidesExplClass{niancls}{2023-08-28}{0.0.0}{Nian Document Class}
 %    \end{macrocode}
 % 定义载入文档类信息等。
 %    \begin{macrocode}
@@ -173,12 +173,12 @@ NianCLS, 年文檔類
 \newif \ifnpream \npreamtrue
 \@@_at_doc_begin:n { \npreamfalse }
 %    \end{macrocode}
-% 定义视情况是否开启\LaTeX3环境的宏。
+% 定义视情况是否开启\LaTeX3环境的宏。（其实这玩意没太大必要，反而会损失性能，视情况无效化。）
 %    \begin{macrocode}
 \cs_new:Npn \ContExplOn
-  { \if npream \else \ExplSyntaxOn \fi }
+  { \ifnpream \else \ExplSyntaxOn \fi } %FIXME
 \cs_new:Npn \ContExplOff
-  { \if npream \else \ExplSyntaxOff \fi }
+  { \ifnpream \else \ExplSyntaxOff \fi } %FIXME
 %    \end{macrocode}
 % 定义用于在读取结束后释放缓存的宏。
 %    \begin{macrocode}
@@ -609,7 +609,7 @@ NianCLS, 年文檔類
 %<*obsolete>
 \str_if_eq:VnT \l_@@_layout_doctype_str { a }
   {
-    \keys_set { ncls }
+    \keys_set:nn { ncls }
       {
         print .initial:n = { oneside },
         titlepage .initial:n = { false },
@@ -618,7 +618,7 @@ NianCLS, 年文檔類
   }
 \str_if_eq:VnT \l_@@_layout_doctype_str { r }
   {
-    \keys_set { ncls }
+    \keys_set:nn { ncls }
       {
         print .initial:n = { vartwoside },
         titlepage .initial:n = { true },
@@ -627,7 +627,7 @@ NianCLS, 年文檔類
   }
 \str_if_eq:VnT \l_@@_layout_doctype_str { b }
   {
-    \keys_set { ncls }
+    \keys_set:nn { ncls }
       {
         print .initial:n = { twoside },
         titlepage .initial:n = { true },
@@ -648,24 +648,24 @@ NianCLS, 年文檔類
 \keys_define:nn { ncls }
   {
     fontsize .choice:,
-    fontsize /  7pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 0.6940 } },
-    fontsize /  8pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 0.8330 } },
-    fontsize /  9pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 0.9130 } },
-    fontsize / 10pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 1.0000 } },
+    fontsize / 7pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 0.694 } },
+    fontsize / 8pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 0.833 } },
+    fontsize / 9pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 0.913 } },
+    fontsize / 10pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 1 } },
     fontsize / 11pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 1.0953 } },
-    fontsize / 12pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 1.2000 } },
-    fontsize / 13pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 1.3000 } },
-    fontsize / 14pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 1.4400 } },
-    fontsize / 15pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 1.5000 } },
-    fontsize / 16pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 1.6000 } },
-    fontsize / 17pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 1.7280 } },
-    fontsize / 20pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 2.0000 } },
-    fontsize / 21pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 2.0740 } },
-    fontsize / 24pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 2.4000 } },
-    fontsize / 25pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 2.4880 } },
-    fontsize / 30pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 2.9860 } },
-    fontsize / 36pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 3.5830 } },
-    fontsize / 43pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 4.3000 } },
+    fontsize / 12pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 1.2 } },
+    fontsize / 13pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 1.3 } },
+    fontsize / 14pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 1.44 } },
+    fontsize / 15pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 1.5 } },
+    fontsize / 16pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 1.6 } },
+    fontsize / 17pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 1.728 } },
+    fontsize / 20pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 2. } },
+    fontsize / 21pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 2.074 } },
+    fontsize / 24pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 2.4 } },
+    fontsize / 25pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 2.488 } },
+    fontsize / 30pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 2.986 } },
+    fontsize / 36pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 3.583 } },
+    fontsize / 43pt .code:n = { \tl_set:Nn \l_@@_font_magscale_tl { 4.3 } },
     fontsize / unknown .code:n =
       {
         \msg_error:nnxxx { ncls } { unknown-choice }
@@ -784,7 +784,7 @@ NianCLS, 年文檔類
 \keys_define:nn { ncls }
   {
     magstyle .choice:,
-    magstyle / real .code:n = { \bool_set_false:N \l_@@_font_xreal_bool },
+    magstyle / nil .code:n = { \bool_set_false:N \l_@@_font_xreal_bool },
     magstyle / xreal .code:n = { \bool_set_true:N \l_@@_font_xreal_bool },
     magstyle .value_required:n = true,
     magstyle .initial:n = { xreal }
@@ -808,6 +808,196 @@ NianCLS, 年文檔類
   }
 %    \end{macrocode}
 %%%% ^^X <=|
+%%%% ^^X 字體排印參數 |=>
+% \subsubsection{字體排印參數}
+% 在正文中使用各类选取尺寸的宏时自动设置的版面参数设置。
+%    \begin{macrocode}
+\clist_map_inline:nn { HUGE, Huge, huge, LARGE, Large, large, normal, small, footnote, script, tiny }
+  {
+    \clist_map_inline:nn { abovedisplay, abovedisplayshort, belowdisplay, belowdisplayshort }
+      {
+        \tl_new:c { l_@@_font_#1 size_##1 skip_tl }
+        \keys_define:nn { ncls }
+          {
+            #1 size / ##1 skip .tl_set:c = { l_@@_font_#1 size_##1 skip_tl },
+            #1 size / ##1 skip .value_required:n = true
+          }
+      }
+  }
+%    \end{macrocode}
+% 随后为其设定初始值。
+%    \begin{macrocode}
+\keys_define:nn { ncls }
+  {
+    HUGEsize / abovedisplayskip .initial:n = { 28 \mpt~plus 8 \mpt~minus 9 \mpt },
+    HUGEsize / abovedisplayshortskip .initial:n = { 14 \mpt~plus 5 \mpt },
+    HUGEsize / belowdisplayskip .initial:n = { 28 \mpt~plus 8 \mpt~minus 9 \mpt },
+    HUGEsize / belowdisplayshortskip .initial:n = { 14 \mpt~plus 5 \mpt },
+    Hugesize / abovedisplayskip .initial:n = { 25 \mpt~plus 4 \mpt~minus 5 \mpt },
+    Hugesize / abovedisplayshortskip .initial:n = { 9 \mpt~plus 4 \mpt },
+    Hugesize / belowdisplayskip .initial:n = { 25 \mpt~plus 4 \mpt~minus 5 \mpt },
+    Hugesize / belowdisplayshortskip .initial:n = { 9 \mpt~plus 4 \mpt },
+    hugesize / abovedisplayskip .initial:n = { 23 \mpt~plus 7 \mpt~minus 6 \mpt },
+    hugesize / abovedisplayshortskip .initial:n = { 7 \mpt~plus 3 \mpt },
+    hugesize / belowdisplayskip .initial:n = { 23 \mpt~plus 7 \mpt~minus 6 \mpt },
+    hugesize / belowdisplayshortskip .initial:n = { 7 \mpt~plus 3 \mpt },
+    LARGEsize / abovedisplayskip .initial:n = { 20 \mpt~plus 6 \mpt~minus 5 \mpt },
+    LARGEsize / abovedisplayshortskip .initial:n = { 5 \mpt~plus 3 \mpt },
+    LARGEsize / belowdisplayskip .initial:n = { 20 \mpt~plus 6 \mpt~minus 5 \mpt },
+    LARGEsize / belowdisplayshortskip .initial:n = { 5 \mpt~plus 3 \mpt },
+    Largesize / abovedisplayskip .initial:n = { 16 \mpt~plus 6 \mpt~minus 6 \mpt },
+    Largesize / abovedisplayshortskip .initial:n = { 3 \mpt~plus 2 \mpt },
+    Largesize / belowdisplayskip .initial:n = { 16 \mpt~plus 6 \mpt~minus 6 \mpt },
+    Largesize / belowdisplayshortskip .initial:n = { 3 \mpt~plus 2 \mpt },
+    largesize / abovedisplayskip .initial:n = { 13 \mpt~plus 4 \mpt~minus 5 \mpt },
+    largesize / abovedisplayshortskip .initial:n = { 2 \mpt~plus 2 \mpt },
+    largesize / belowdisplayskip .initial:n = { 13 \mpt~plus 4 \mpt~minus 5 \mpt },
+    largesize / belowdisplayshortskip .initial:n = { 2 \mpt~plus 2 \mpt },
+    normalsize / abovedisplayskip .initial:n = { 11 \mpt~plus 3 \mpt~minus 4 \mpt },
+    normalsize / abovedisplayshortskip .initial:n = { 0 \mpt~plus 3 \mpt },
+    normalsize / belowdisplayskip .initial:n = { 9 \mpt~plus 3\mpt~minus 4 \mpt },
+    normalsize / belowdisplayshortskip .initial:n = { 9 \mpt~plus 3 \mpt~minus 4 \mpt },
+    smallsize / abovedisplayskip .initial:n = { 9 \mpt~plus 3 \mpt~minus 4 \mpt },
+    smallsize / abovedisplayshortskip .initial:n = { 0 \mpt~plus 3 \mpt },
+    smallsize / belowdisplayskip .initial:n = { 9 \mpt~plus 3 \mpt~minus 4 \mpt },
+    smallsize / belowdisplayshortskip .initial:n = { 0 \mpt~plus 3 \mpt },
+    footnotesize / abovedisplayskip .initial:n = { 6 \mpt~plus 2 \mpt~minus 3 \mpt },
+    footnotesize / abovedisplayshortskip .initial:n = { 0 \mpt~plus 2 \mpt },
+    footnotesize / belowdisplayskip .initial:n = { 6 \mpt~plus 2 \mpt~minus 3 \mpt },
+    footnotesize / belowdisplayshortskip .initial:n = { 0 \mpt~plus 2 \mpt },
+    scriptsize / abovedisplayskip .initial:n = { 4 \mpt~plus 1 \mpt~minus 2 \mpt },
+    scriptsize / abovedisplayshortskip .initial:n = { 0 \mpt~plus 1 \mpt },
+    scriptsize / belowdisplayskip .initial:n = { 4 \mpt~plus 1 \mpt~minus 2 \mpt },
+    scriptsize / belowdisplayshortskip .initial:n = { 0 \mpt~plus 1 \mpt },
+    tinysize / abovedisplayskip .initial:n = { 2 \mpt~minus 1 \mpt },
+    tinysize / abovedisplayshortskip .initial:n = { 0 \mpt~plus 1 \mpt },
+    tinysize / belowdisplayskip .initial:n = { 2 \mpt~minus 1 \mpt },
+    tinysize / belowdisplayshortskip .initial:n = { 0 \mpt~plus 1 \mpt }
+  }
+%    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 字體尺寸設定 |=>
+% \subsubsection{字體尺寸設定}
+% 各个字体大小选择宏选取对应的字体大小设定。参数单位为\verb|\mpt|。
+%    \begin{macrocode}
+\clist_map_inline:nn { HUGE, Huge, huge, LARGE, Large, large, normal, small, footnote, script, tiny }
+  {
+    \tl_new:c { l_@@_font_#1 size_sizeinfo_tl }
+    \keys_define:nn { ncls }
+      {
+        #1 size / size .tl_set:c = { l_@@_font_#1 size_sizeinfo_tl },
+        #1 size / size .value_required:n = true
+      }
+  }
+%    \end{macrocode}
+% 以及对应的初始（默认）值。
+%    \begin{macrocode}
+\keys_define:nn { ncls }
+  {
+    HUGEsize / size .initial:n = { 30 },
+    Hugesize / size .initial:n = { 24.88 },
+    hugesize / size .initial:n = { 20.74 },
+    LARGEsize / size .initial:n = { 17.28 },
+    Largesize / size .initial:n = { 14.4 },
+    largesize / size .initial:n = { 11 },
+    normalsize / size .initial:n = { 10 },
+    smallsize / size .initial:n = { 9 },
+    footnotesize / size .initial:n = { 8 },
+    scriptsize / size .initial:n = { 7 },
+    tinysize / size .initial:n = { 5 }
+  }
+%    \end{macrocode}
+%%%% <=|
+%%%% ^^X 字體行距設定 |=>
+% \subsubsection{字體行距設定}
+% 允许用户选择各个字体尺寸所对应的两种行距。注意设定的单位为\verb|\mpt|，不支持别的。
+%    \begin{macrocode}
+\clist_map_inline:nn { HUGE, Huge, huge, LARGE, Large, large, normal, small, footnote, script, tiny }
+  {
+    \clist_map_inline:nn { baseline, narrowbaseline }
+      {
+        \tl_new:c { l_@@_font_#1 size_##1 skip_tl }
+        \keys_define:nn { ncls }
+          {
+            #1 size / ##1 skip .tl_set:c = { l_@@_font_#1 size_##1 skip_tl },
+            #1 size / ##1 skip .value_required:n = true
+          }
+      }
+  }
+%    \end{macrocode}
+% 并且也为其设定缺省值。
+%    \begin{macrocode}
+\keys_define:nn { ncls }
+  {
+    HUGEsize / baselineskip .initial:n = { 40 },
+    HUGEsize / narrowbaselineskip .initial:n = { 40 },
+    Hugesize / baselineskip .initial:n = { 33 },
+    Hugesize / narrowbaselineskip .initial:n = { 33 },
+    hugesize / baselineskip .initial:n = { 28 },
+    hugesize / narrowbaselineskip .initial:n = { 28 },
+    LARGEsize / baselineskip .initial:n = { 25 },
+    LARGEsize / narrowbaselineskip .initial:n = { 25 },
+    Largesize / baselineskip .initial:n = { 21 },
+    Largesize / narrowbaselineskip .initial:n = { 21 },
+    largesize / baselineskip .initial:n = { 17 },
+    largesize / narrowbaselineskip .initial:n = { 17 },
+    normalsize / baselineskip .initial:n = { 16 },
+    normalsize / narrowbaselineskip .initial:n = { 12 },
+    smallsize / baselineskip .initial:n = { 13 },
+    smallsize / narrowbaselineskip .initial:n = { 11 },
+    footnotesize / baselineskip .initial:n = { 11 },
+    footnotesize / narrowbaselineskip .initial:n = { 9.5 },
+    scriptsize / baselineskip .initial:n = { 8 },
+    scriptsize / narrowbaselineskip .initial:n = { 8 },
+    tinysize / baselineskip .initial:n = { 6 },
+    tinysize / narrowbaselineskip .initial:n = { 6 }
+  }
+%    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 字體尺寸其他參數 |=>
+% \subsubsection{字體尺寸其他參數}
+% 最后为各种尺寸设置上下文参数。
+%    \begin{macrocode}
+\clist_map_inline:nn { HUGE, Huge, huge, LARGE, Large, large, normal, small, footnote, script, tiny }
+  {
+    \tl_new:c { l_@@_font_#1 size_listinfo_tl }
+    \keys_define:nn { ncls }
+      {
+        #1 size / list .tl_set:c = { l_@@_font_#1 size_listinfo_tl },
+        #1 size / list .value_required:n = true
+      }
+  }
+%    \end{macrocode}
+% 并设定初始值。仅设置三种尺寸字体的，其余为\verb|\relax|。
+%    \begin{macrocode}
+\keys_define:nn { ncls }
+  {
+    HUGEsize / list .initial:n = { \relax },
+    Hugesize / list .initial:n = { \relax },
+    hugesize / list .initial:n = { \relax },
+    LARGEsize / list .initial:n = { \relax },
+    Largesize / list .initial:n = { \relax },
+    largesize / list .initial:n = { \relax },
+    normalsize / list .initial:n = { \@listI },
+    smallsize / list .initial:n =
+      {
+        \leftmargin = \leftmargini
+        \topsep = \z@
+        \parsep = \z@
+        \itemsep = \parsep
+      },
+    footnotesize / list .initial:n =
+      {
+        \leftmargin = \leftmargini
+        \topsep = \z@
+        \parsep = \z@
+        \itemsep = \parsep
+      },
+    scriptsize / list .initial:n = { \relax },
+    tinysize / list .initial:n = { \relax }
+  }
+%    \end{macrocode}
+%%%% <=|
 %%%%% ^^X <=|
 %%%%% ^^X 初始化處理 |=>
 % \subsection{初始化處理}
@@ -866,34 +1056,34 @@ NianCLS, 年文檔類
 % \subsubsection{尺寸參數設定}
 % 通过\verb|\__ncls_addpapersize:nnn|设置具体参数。
 %    \begin{macrocode}
-\@@_paper_addsize:nnn { a0  } {  841 mm } { 1189 mm }
-\@@_paper_addsize:nnn { a1  } {  594 mm } {  841 mm }
-\@@_paper_addsize:nnn { a2  } {  420 mm } {  594 mm }
-\@@_paper_addsize:nnn { a3  } {  297 mm } {  420 mm }
-\@@_paper_addsize:nnn { a4  } {  210 mm } {  297 mm }
-\@@_paper_addsize:nnn { a5  } {  148 mm } {  210 mm }
-\@@_paper_addsize:nnn { a6  } {  105 mm } {  148 mm }
-\@@_paper_addsize:nnn { b0  } { 1000 mm } { 1414 mm }
-\@@_paper_addsize:nnn { b1  } {  707 mm } { 1000 mm }
-\@@_paper_addsize:nnn { b2  } {  500 mm } {  707 mm }
-\@@_paper_addsize:nnn { b3  } {  353 mm } {  500 mm }
-\@@_paper_addsize:nnn { b4  } {  250 mm } {  353 mm }
-\@@_paper_addsize:nnn { b5  } {  176 mm } {  250 mm }
-\@@_paper_addsize:nnn { b6  } {  125 mm } {  176 mm }
-\@@_paper_addsize:nnn { c0  } {  917 mm } { 1297 mm }
-\@@_paper_addsize:nnn { c1  } {  648 mm } {  917 mm }
-\@@_paper_addsize:nnn { c2  } {  458 mm } {  648 mm }
-\@@_paper_addsize:nnn { c3  } {  324 mm } {  458 mm }
-\@@_paper_addsize:nnn { c4  } {  229 mm } {  324 mm }
-\@@_paper_addsize:nnn { c5  } {  162 mm } {  229 mm }
-\@@_paper_addsize:nnn { c6  } {  114 mm } {  162 mm }
+\@@_paper_addsize:nnn { a0 } { 841 mm } { 1189 mm }
+\@@_paper_addsize:nnn { a1 } { 594 mm } { 841 mm }
+\@@_paper_addsize:nnn { a2 } { 420 mm } { 594 mm }
+\@@_paper_addsize:nnn { a3 } { 297 mm } { 420 mm }
+\@@_paper_addsize:nnn { a4 } { 210 mm } { 297 mm }
+\@@_paper_addsize:nnn { a5 } { 148 mm } { 210 mm }
+\@@_paper_addsize:nnn { a6 } { 105 mm } { 148 mm }
+\@@_paper_addsize:nnn { b0 } { 1000 mm } { 1414 mm }
+\@@_paper_addsize:nnn { b1 } { 707 mm } { 1000 mm }
+\@@_paper_addsize:nnn { b2 } { 500 mm } { 707 mm }
+\@@_paper_addsize:nnn { b3 } { 353 mm } { 500 mm }
+\@@_paper_addsize:nnn { b4 } { 250 mm } { 353 mm }
+\@@_paper_addsize:nnn { b5 } { 176 mm } { 250 mm }
+\@@_paper_addsize:nnn { b6 } { 125 mm } { 176 mm }
+\@@_paper_addsize:nnn { c0 } { 917 mm } { 1297 mm }
+\@@_paper_addsize:nnn { c1 } { 648 mm } { 917 mm }
+\@@_paper_addsize:nnn { c2 } { 458 mm } { 648 mm }
+\@@_paper_addsize:nnn { c3 } { 324 mm } { 458 mm }
+\@@_paper_addsize:nnn { c4 } { 229 mm } { 324 mm }
+\@@_paper_addsize:nnn { c5 } { 162 mm } { 229 mm }
+\@@_paper_addsize:nnn { c6 } { 114 mm } { 162 mm }
 \@@_paper_addsize:nnn { b0j } { 1030 mm } { 1456 mm }
-\@@_paper_addsize:nnn { b1j } {  728 mm } { 1030 mm }
-\@@_paper_addsize:nnn { b2j } {  515 mm } {  728 mm }
-\@@_paper_addsize:nnn { b3j } {  364 mm } {  515 mm }
-\@@_paper_addsize:nnn { b4j } {  257 mm } {  364 mm }
-\@@_paper_addsize:nnn { b5j } {  182 mm } {  257 mm }
-\@@_paper_addsize:nnn { b6j } {  128 mm } {  182 mm }
+\@@_paper_addsize:nnn { b1j } { 728 mm } { 1030 mm }
+\@@_paper_addsize:nnn { b2j } { 515 mm } { 728 mm }
+\@@_paper_addsize:nnn { b3j } { 364 mm } { 515 mm }
+\@@_paper_addsize:nnn { b4j } { 257 mm } { 364 mm }
+\@@_paper_addsize:nnn { b5j } { 182 mm } { 257 mm }
+\@@_paper_addsize:nnn { b6j } { 128 mm } { 182 mm }
 \@@_paper_addsize:nnn { screen } { 225 mm } { 180 mm }
 %    \end{macrocode}
 %%%% ^^X <=|
@@ -1463,34 +1653,34 @@ NianCLS, 年文檔類
       \ContExplOff
     \fi
     \ltj@setpar@global
-    \expandafter \ltjsetkanjiskip \csname~l__ncls_font_kanjiskip_tl \endcsname
+    \expandafter \ltjsetkanjiskip \l__ncls_font_kanjiskip_tl
     \@tempskipa = \ltjgetparameter { xkanjiskip }
     \ifdim \@tempskipa > \z@
-      \expandafter \ltjsetxkanjiskip \csname~l__ncls_font_xkanjiskip_tl \endcsname
+      \expandafter \ltjsetxkanjiskip \l__ncls_font_xkanjiskip_tl
     \fi
   }
 %<*obsolete>
 \cs_set:Npn \@setfontsize #1 #2 #3
   {
     \ContExplOn
-    \cs_if_eq:NNT \protect \@typeset@protect
-      { \tl_set:Nn \@currsize { #1 } }
-    \fontsize { #2 } { #3 } \selectfont
-    \dim_compare:nNnT { \parindent } > { \z@ }
-      {
-        \str_if_eq:VnTF \l_@@_lang_cj_str { j }
-          { \dim_set:Nn \parindent { 1 \zw } }
-          { \dim_set:Nn \parindent { 2 \zw } }
-        \bool_if:NT \l_@@_layout_english_bool
-          { \dim_set:Nn \parindent { 1 em } }
-      }
-    \ltj@setpar@global
-    \ltjsetkanjiskip \maxdimen
-    \dim_set:Nn \l_tmpa_dim { \ltjgetparameter { xkanjiskip } }
-    \dim_compare:nNnT { \l_tmpa_dim } > { \z@ }
-      {
-        \ltjsetxkanjiskip \maxdimen
-      }
+      \cs_if_eq:NNT \protect \@typeset@protect
+        { \tl_set:Nn \@currsize { #1 } }
+      \fontsize { #2 } { #3 } \selectfont
+      \dim_compare:nNnT { \parindent } > { \z@ }
+        {
+          \str_if_eq:VnTF \l_@@_lang_cj_str { j }
+            { \dim_set:Nn \parindent { 1 \zw } }
+            { \dim_set:Nn \parindent { 2 \zw } }
+          \bool_if:NT \l_@@_layout_english_bool
+            { \dim_set:Nn \parindent { 1 em } }
+        }
+      \ltj@setpar@global
+      \ltjsetkanjiskip \maxdimen
+      \dim_set:Nn \l_tmpa_dim { \ltjgetparameter { xkanjiskip } }
+      \dim_compare:nNnT { \l_tmpa_dim } > { \z@ }
+        {
+          \ltjsetxkanjiskip \maxdimen
+        }
     \ContExplOff
   }
 %</obsolete>
@@ -1498,7 +1688,7 @@ NianCLS, 年文檔類
 % 随后定义本文档类内部使用的设置字体尺寸的宏。不于导言区末尾清除它的定义。
 %    \begin{macrocode}
 \cs_new:Npn \ncls@fontsetsize #1 #2 #3
-  { \@setfontsize #1 { #2 } { #3 } }
+  { \@setfontsize #1 { #2 \mpt } { #3 \mpt } }
 %<*obsolete>
 \cs_new:Nn \@@_font_setsize:nnn
   { \@setfontsize #1 { #2 \mpt } { #3 \mpt } }
@@ -1537,28 +1727,28 @@ NianCLS, 年文檔類
 \cs_new:Nn \@@_baseline_narrow:
   {
     \ContExplOn
-    \legacy_if_set_true:n { narrowbaselines }
-    \skip_new:N \l_@@_abovedisplay_temp_skip
-    \skip_new:N \l_@@_abovedisplayshort_temp_skip
-    \skip_new:N \l_@@_belowdisplay_temp_skip
-    \skip_new:N \l_@@_belowdisplayshort_temp_skip
-    \skip_set_eq:NN \l_@@_abovedisplay_temp_skip \abovedisplayskip
-    \skip_set_eq:NN \l_@@_abovedisplayshort_temp_skip \abovedisplayshortskip
-    \skip_set_eq:NN \l_@@_belowdisplay_temp_skip \belowdisplayskip
-    \skip_set_eq:NN \l_@@_belowdisplayshort_temp_skip \belowdisplayshortskip
-    \@currsize \selectfont
-    \skip_set_eq:NN \abovedisplayskip \l_@@_abovedisplay_temp_skip
-    \skip_set_eq:NN \abovedisplayshortskip \l_@@_abovedisplayshort_temp_skip
-    \skip_set_eq:NN \belowdisplayskip \l_@@_belowdisplay_temp_skip
-    \skip_set_eq:NN \belowdisplayshortskip \l_@@_belowdisplayshort_temp_skip
-    \scan_stop:
+      \legacy_if_set_true:n { narrowbaselines }
+      \skip_new:N \l_@@_abovedisplay_temp_skip
+      \skip_new:N \l_@@_abovedisplayshort_temp_skip
+      \skip_new:N \l_@@_belowdisplay_temp_skip
+      \skip_new:N \l_@@_belowdisplayshort_temp_skip
+      \skip_set_eq:NN \l_@@_abovedisplay_temp_skip \abovedisplayskip
+      \skip_set_eq:NN \l_@@_abovedisplayshort_temp_skip \abovedisplayshortskip
+      \skip_set_eq:NN \l_@@_belowdisplay_temp_skip \belowdisplayskip
+      \skip_set_eq:NN \l_@@_belowdisplayshort_temp_skip \belowdisplayshortskip
+      \@currsize \selectfont
+      \skip_set_eq:NN \abovedisplayskip \l_@@_abovedisplay_temp_skip
+      \skip_set_eq:NN \abovedisplayshortskip \l_@@_abovedisplayshort_temp_skip
+      \skip_set_eq:NN \belowdisplayskip \l_@@_belowdisplay_temp_skip
+      \skip_set_eq:NN \belowdisplayshortskip \l_@@_belowdisplayshort_temp_skip
+      \scan_stop:
     \ContExplOff
   }
 \cs_new:Nn \@@_baseline_wide:
   {
     \ContExplOn
-    \legacy_if_set_false:n { narrowbaselines }
-    \@currsize \selectfont
+      \legacy_if_set_false:n { narrowbaselines }
+      \@currsize \selectfont
     \ContExplOff
   }
 %</obsolete>
@@ -1585,36 +1775,30 @@ NianCLS, 年文檔類
 %%%% ^^X <=|
 %%%% ^^X 字體尺寸 |=>
 % \subsubsection{字體尺寸設置}
-% 终于可以设置重要的字号及行距等相关信息了。首先是正常尺寸（10pt）。因为我们的引擎她不支持mag，所以都是用标准尺寸缩放出来的，也就在这里可以省一点事：全局使用标准尺寸了。根据ltjs文档类，公称10分的（中）日文字体约为9.25分（也就是ASCII的0.961倍），所以设置16分的行间距相当宽松；同时16比上9.25大概是1.73，也比较接近传统「二分四分」的约定。然后这个行距就不允许自定义了。顺便，这里就直接用expl3的语法了。而且，都用expl3了，尺寸就直接写了。
+% 终于可以设置重要的字号及行距等相关信息了。首先是正常尺寸（10pt）。因为我们的引擎她不支持mag，所以都是用标准尺寸缩放出来的，也就在这里可以省一点事：全局使用标准尺寸了。根据ltjs文档类，公称10分的（中）日文字体约为9.25分（也就是ASCII的0.961倍），所以设置16分的行间距相当宽松；同时16比上9.25大概是1.73，也比较接近传统「二分四分」的约定。
 %    \begin{macrocode}
-\cs_set:Npn \normalsize
+\clist_map_inline:nn { HUGE, Huge, huge, LARGE, Large, large, normal, small, footnote, script, tiny }
   {
-    \ncls@ifnarrowbaselines
-      { \ncls@fontsetsize \normalsize { 10 } { 12 } }
-      { \ncls@fontsetsize \normalsize { 10 } { 16 } }
-    \abovedisplayskip 11 \mpt plus 3 \mpt minus 4 \mpt
-    \abovedisplayshortskip \z@ plus 3 \mpt
-    \belowdisplayskip 9 \mpt plus 3 \mpt minus 4 \mpt
-    \belowdisplayshortskip \belowdisplayskip
-    \let \@listi \@listI
+    \cs_set:cpn { #1 size }
+      {
+        \ncls@ifnarrowbaselines
+          {
+            \expandafter \ncls@fontsetsize \csname~#1 size \endcsname 
+            { \csname~l_@@_font_#1 size_sizeinfo_tl \endcsname }
+            { \csname~l_@@_font_#1 size_narrowbaselineskip_tl \endcsname }
+          }
+          {
+            \expandafter \ncls@fontsetsize \csname~#1 size \endcsname
+            { \csname~l_@@_font_#1 size_sizeinfo_tl \endcsname }
+            { \csname~l_@@_font_#1 size_baselineskip_tl \endcsname }
+          }
+        \abovedisplayskip = \csname~l_@@_font_#1 size_abovedisplayskip_tl \endcsname
+        \abovedisplayshortskip = \csname~l_@@_font_#1 size_abovedisplayshortskip_tl \endcsname
+        \belowdisplayskip = \csname~l_@@_font_#1 size_belowdisplayskip_tl \endcsname
+        \belowdisplayshortskip = \csname~l_@@_font_#1 size_belowdisplayshortskip_tl \endcsname
+        \def \@listi { \csname~l_@@_font_#1 size_listinfo_tl \endcsname }
+      }
   }
-%<*obsolete>
-\cs_set:Npn \normalsize
-  {
-    \ContExplOn
-    \@@_baseline_ifnarrow:nn
-      { \@@_font_setsize:nnn { \normalsize } { 10 } { 12 } }
-      { \@@_font_setsize:nnn { \normalsize } { 10 } { 16 } }
-    \iffalse
-      \skip_set:Nn \abovedisplayskip { 11 \mpt~plus 3\mpt~minus 4\mpt } % FIXME
-      \skip_set:Nn \abovedisplayshortskip { 0 \mpt~plus 3\mpt } % FIXME
-      \skip_set:Nn \belowdisplayskip { 9 \mpt~plus 3\mpt~4\mpt } % FIXME
-      \skip_set:Nn \belowdisplayshortskip { 0 \mpt~plus 3 \mpt } % FIXME
-    \fi
-    \cs_new_eq:NN \@listi \@listI
-    \ContExplOff
-  }
-%</obsolete>
 %    \end{macrocode}
 % 初始化字体。
 %    \begin{macrocode}
@@ -1623,7 +1807,6 @@ NianCLS, 年文檔類
 %    \end{macrocode}
 % 在初始化后重新开启环境，并测量字框数据。
 %    \begin{macrocode}
-\ExplSyntaxOn
 \hbox_set:Nn \l_tmpa_box { 年 }
 \dim_set:Nn \Cht { \box_ht:N \l_tmpa_box }
 \dim_set:Nn \Cdp { \box_dp:N \l_tmpa_box }

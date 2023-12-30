@@ -199,7 +199,7 @@ NianCLS, 年文檔類
 %    \begin{macrocode}
 \msg_new:nnnn { ncls } { unknown-choice }
   { Unknown~choice~given~to~key~`#1'. }
-  { 
+  {
     Valid~choices~are:~#2; \\
     while~you~gave:~#3.
   }
@@ -493,12 +493,12 @@ NianCLS, 年文檔類
         \bool_set_false:N \l_@@_layout_openleft_bool
         \bool_set_true:N \l_@@_layout_openright_bool
       },
-    open / any .code:n = 
+    open / any .code:n =
       {
         \bool_set_true:N \l_@@_layout_openleft_bool
         \bool_set_true:N \l_@@_layout_openright_bool
       },
-    open / unknown .code:n = 
+    open / unknown .code:n =
       {
         \msg_error:nnxxx { ncls } { unknown-choice }
           { open }
@@ -527,7 +527,7 @@ NianCLS, 年文檔類
         \bool_set_false:N \l_@@_layout_draft_bool
         \dim_set:Nn \overfullrule { 0 \mpt }
       },
-    version / unknown .code:n = 
+    version / unknown .code:n =
       {
         \msg_error:nnxxx { ncls } { unknown-choice }
           { version }
@@ -1180,7 +1180,7 @@ NianCLS, 年文檔類
 % \subsubsection{清除內存}
 % 并做好内存管理。
 %    \begin{macrocode}
-\@@_macro_release:N \@@_paper_addsize:nnn 
+\@@_macro_release:N \@@_paper_addsize:nnn
 \@@_macro_release:N \g_@@_paper_sizelist_prop
 \@@_macro_release:N \l_@@_paper_sizeinfo_tl
 %<*obsolete>
@@ -1700,7 +1700,7 @@ NianCLS, 年文檔類
 % 两种行距设定，适应于西文／中日文组版。因为用户也能手动指定行距设定，故我们用遗产。
 %    \begin{macrocode}
 \newif \ifnarrowbaselines
-\bool_if:NT \l_@@_layout_english_bool 
+\bool_if:NT \l_@@_layout_english_bool
   { \narrowbaselinestrue }
 \cs_new:Npn \narrowbaselines
   {
@@ -1722,7 +1722,7 @@ NianCLS, 年文檔類
     \@currsize \selectfont
   }
 %<*obsolete>
-\bool_if:NT \l_@@_layout_english_bool 
+\bool_if:NT \l_@@_layout_english_bool
   { \legacy_if_set_true:n { narrowbaselines } }
 \cs_new:Nn \@@_baseline_narrow:
   {
@@ -1783,7 +1783,7 @@ NianCLS, 年文檔類
       {
         \ncls@ifnarrowbaselines
           {
-            \expandafter \ncls@fontsetsize \csname~#1 size \endcsname 
+            \expandafter \ncls@fontsetsize \csname~#1 size \endcsname
             { \csname~l_@@_font_#1 size_sizeinfo_tl \endcsname }
             { \csname~l_@@_font_#1 size_narrowbaselineskip_tl \endcsname }
           }

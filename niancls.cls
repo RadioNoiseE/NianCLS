@@ -775,6 +775,61 @@
     margin / hrvalue .value_required:n = true
   }
 %%%% ^^X <=|
+%%%% ^^X 邊註 |=>
+\bool_new:N \l__ncls_marginpar_bool
+\keys_define:nn { ncls }
+  {
+    marginpar .bool_set:N = \l__ncls_marginpar_bool,
+    marginpar .value_required:n = true,
+    marginpar .initial:n = { false }
+  }
+\bool_new:N \l__ncls_marginpar_reverse_bool
+\keys_define:nn { ncls }
+  {
+    marginpar / reverse .bool_set:N = \l__ncls_marginpar_reverse_bool,
+    marginpar / reverse .value_required:n = true,
+    marginpar / reverse .initial:n = { false }
+  }
+\tl_new:N \l__ncls_marginpar_width_tl
+\keys_define:nn { ncls }
+  {
+    marginpar / width .tl_set:N = \l__ncls_marginpar_width_tl,
+    marginpar / width .value_required:n = true,
+    marginpar / width .initial:n = { 0.34 \textwidth }
+  }
+\tl_new:N \l__ncls_marginpar_sep_width_tl
+\keys_define:nn { ncls }
+  {
+    marginpar / sep .tl_set:N = \l__ncls_marginpar_sep_width_tl,
+    marginpar / sep .value_required:n = true,
+    marginpar / sep .initial:n = { 0.9 \marginparwidth }
+  }
+%%%% ^^X <=|
+%%%% ^^X 頁眉頁腳 |=>
+\tl_new:N \l__ncls_layout_topskip_tl
+\tl_new:N \l__ncls_layout_headheight_tl
+\tl_new:N \l__ncls_layout_headsep_tl
+\tl_new:N \l__ncls_layout_footskip_tl
+\tl_new:N \l__ncls_layout_maxdepth_tl
+\keys_define:nn { ncls }
+  {
+    topskip .tl_set:N = \l__ncls_layout_topskip_tl,
+    topskip .value_required:n = true,
+    topskip .initial:n = { 1.38 \zw },
+    headheight .tl_set:N = \l__ncls_layout_headheight_tl,
+    headheight .value_required:n = true,
+    headheight .initial:n = { 20 \mpt },
+    headsep .tl_set:N = \l__ncls_layout_headsep_tl,
+    headsep .value_required:n = true,
+    headsep .initial:n = { \footskip - \topskip },
+    footskip .tl_set:N = \l__ncls_layout_footskip_tl,
+    footskip .value_required:n = true,
+    footskip .initial:n = { 0.03367 \paperheight },
+    maxdepth .tl_set:N = \l__ncls_layout_maxdepth_tl,
+    maxdepth .value_required:n = true,
+    maxdepth .initial:n = { 0.5 \topskip }
+  }
+%%%% ^^X <=|
 %%%%% ^^X <=|
 %%%%% ^^X 初始化處理 |=>
 \__ncls_keyoptions_process:n { ncls }
@@ -1307,6 +1362,15 @@
 \__ncls_macro_release:N \l__ncls_margin_value_vertical_bottom_tl
 \__ncls_macro_release:N \l__ncls_margin_value_horizontal_left_tl
 \__ncls_macro_release:N \l__ncls_margin_value_horizontal_right_tl
+\__ncls_macro_release:N \l__ncls_marginpar_bool
+\__ncls_macro_release:N \l__ncls_marginpar_reverse_bool
+\__ncls_macro_release:N \l__ncls_marginpar_width_tl
+\__ncls_macro_release:N \l__ncls_marginpar_sep_tl
+\__ncls_macro_release:N \l__ncls_layout_topskip_tl
+\__ncls_macro_release:N \l__ncls_layout_headheight_tl
+\__ncls_macro_release:N \l__ncls_layout_headsep_tl
+\__ncls_macro_release:N \l__ncls_layout_footskip_tl
+\__ncls_macro_release:N \l__ncls_layout_maxdepth_tl
 %%%% ^^X <=|
 %%%%% ^^X <=|
 %%%%%% ^^X <=|

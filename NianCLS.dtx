@@ -1023,6 +1023,7 @@ NianCLS, 年文檔類
 %%%%% ^^X 版面相關配置 |=>
 % \subsection{版面相關配置}
 %%%% ^^X 邊距 |=>
+% \subsubsection{邊距設定}
 % 此處設置邊距。需要考慮直接設置邊距四個變量的值以及通過給出版面大小及邊距比例計
 % 算得出邊距變量的值兩種情況。此處不對CJK排版作任何優化、在後面實現時再作調整。
 % \par
@@ -1098,6 +1099,81 @@ NianCLS, 年文檔類
     margin / hlvalue .value_required:n = true,
     margin / hrvalue .tl_set:N = \l_@@_margin_value_horizontal_right_tl,
     margin / hrvalue .value_required:n = true
+  }
+%    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 邊註 |=>
+% \subsubsection{邊註選項}
+% 這裏我們則提供用戶配置邊註的接口。分別是：是否需要邊註、是否需要切換邊註的位置
+% （即原本在外側翻轉到內側）、邊註的寬度、以及邊註與版面（正文）的間距。\par
+% 首先是是否需要邊距。
+%    \begin{macrocode}
+\bool_new:N \l_@@_marginpar_bool
+\keys_define:nn { ncls }
+  {
+    marginpar .bool_set:N = \l_@@_marginpar_bool,
+    marginpar .value_required:n = true,
+    marginpar .initial:n = { false }
+  }
+%    \end{macrocode}
+% 接下來是是否需要翻轉邊註位置的選項。
+%    \begin{macrocode}
+\bool_new:N \l_@@_marginpar_reverse_bool
+\keys_define:nn { ncls }
+  {
+    marginpar / reverse .bool_set:N = \l_@@_marginpar_reverse_bool,
+    marginpar / reverse .value_required:n = true,
+    marginpar / reverse .initial:n = { false }
+  }
+%    \end{macrocode}
+% 隨後是邊註的寬度。
+%    \begin{macrocode}
+\tl_new:N \l_@@_marginpar_width_tl
+\keys_define:nn { ncls }
+  {
+    marginpar / width .tl_set:N = \l_@@_marginpar_width_tl,
+    marginpar / width .value_required:n = true,
+    marginpar / width .initial:n = { 0.34 \textwidth }
+  }
+%    \end{macrocode}
+% 最後是其與正文的間距。
+%    \begin{macrocode}
+\tl_new:N \l_@@_marginpar_sep_width_tl
+\keys_define:nn { ncls }
+  {
+    marginpar / sep .tl_set:N = \l_@@_marginpar_sep_width_tl,
+    marginpar / sep .value_required:n = true,
+    marginpar / sep .initial:n = { 0.9 \marginparwidth }
+  }
+%    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 頁眉頁腳 |=>
+% \subsubsection{頁眉頁腳配置}
+% 這裏我們提供頁眉頁腳與正文間距的接口。實際上設置的就是\verb|\headsep|、
+% \verb|\headheight|、\verb|\topskip|、\verb|\footskip|和\verb|\maxdepth|。
+%    \begin{macrocode}
+\tl_new:N \l_@@_layout_topskip_tl
+\tl_new:N \l_@@_layout_headheight_tl
+\tl_new:N \l_@@_layout_headsep_tl
+\tl_new:N \l_@@_layout_footskip_tl
+\tl_new:N \l_@@_layout_maxdepth_tl
+\keys_define:nn { ncls }
+  {
+    topskip .tl_set:N = \l_@@_layout_topskip_tl,
+    topskip .value_required:n = true,
+    topskip .initial:n = { 1.38 \zw },
+    headheight .tl_set:N = \l_@@_layout_headheight_tl,
+    headheight .value_required:n = true,
+    headheight .initial:n = { 20 \mpt },
+    headsep .tl_set:N = \l_@@_layout_headsep_tl,
+    headsep .value_required:n = true,
+    headsep .initial:n = { \footskip - \topskip },
+    footskip .tl_set:N = \l_@@_layout_footskip_tl,
+    footskip .value_required:n = true,
+    footskip .initial:n = { 0.03367 \paperheight },
+    maxdepth .tl_set:N = \l_@@_layout_maxdepth_tl,
+    maxdepth .value_required:n = true,
+    maxdepth .initial:n = { 0.5 \topskip }
   }
 %    \end{macrocode}
 %%%% ^^X <=|
@@ -1955,9 +2031,19 @@ NianCLS, 年文檔類
 % 度加上行間距的整數倍減去一個行間距。首先根據兩種情況分別處理。
 %    \begin{macrocode}
 \bool_if:NTF \l_@@_margin_method_ratio_bool
+%    \end{macrocode}
+% 這裏是使用比例特性的分支。
+%    \begin{macrocode}
   {
+%    \end{macrocode}
+% 首先我們讓行長是字面寬度的整數倍、同時讓寬度正好能排版整數倍的漢字。至於上面提
+% 到的plain和misc模式我覺得不做問題也不大。
+%    \begin{macrocode}
     % TODO
   }
+%    \end{macrocode}
+% 使用賦值方法的分支。
+%    \begin{macrocode}
   {
     % TODO
   }
@@ -1975,6 +2061,15 @@ NianCLS, 年文檔類
 \@@_macro_release:N \l_@@_margin_value_vertical_bottom_tl
 \@@_macro_release:N \l_@@_margin_value_horizontal_left_tl
 \@@_macro_release:N \l_@@_margin_value_horizontal_right_tl
+\@@_macro_release:N \l_@@_marginpar_bool
+\@@_macro_release:N \l_@@_marginpar_reverse_bool
+\@@_macro_release:N \l_@@_marginpar_width_tl
+\@@_macro_release:N \l_@@_marginpar_sep_tl
+\@@_macro_release:N \l_@@_layout_topskip_tl
+\@@_macro_release:N \l_@@_layout_headheight_tl
+\@@_macro_release:N \l_@@_layout_headsep_tl
+\@@_macro_release:N \l_@@_layout_footskip_tl
+\@@_macro_release:N \l_@@_layout_maxdepth_tl
 %    \end{macrocode}
 %%%% ^^X <=|
 %%%%% ^^X <=|

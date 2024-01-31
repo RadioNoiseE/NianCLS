@@ -4,7 +4,7 @@ temp-file = NianCLS.hd NianCLS.glo NianCLS.gls
 
 all : extract build clean
 
-build : NianCLS.dtx build.sh
+build : NianCLS.dtx
 	lualatex NianCLS.dtx
 	makeindex -s gglo.ist -o NianCLS.gls NianCLS.glo
 	makeindex -s gind.ist -o NianCLS.ind NianCLS.idx

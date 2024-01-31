@@ -252,6 +252,13 @@
         \bool_set_false:N \l__ncls_layout_openleft_bool
         \bool_set_true:N \l__ncls_layout_openright_bool
       },
+    doctype / unknown .code:n =
+      {
+        \msg_error:nnxxx { ncls } { unknown-choice }
+          { doctype }
+          { article,~report,~book }
+          { \exp_not:n { #1 } }
+      },
     doctype .value_required:n = true,
     doctype .initial:n = { article }
   }
@@ -508,6 +515,13 @@
     punct .multichoice:,
     punct / hanging .code:n = { \bool_set_true:N \l__ncls_jfm_hanging_bool },
     punct / linegap .code:n = { \bool_set_true:N \l__ncls_jfm_linegap_bool },
+    punct / unknown .code:n =
+      {
+        \msg_error:nnxxx { ncls } { unknown-choice }
+          { punct }
+          { hanging,~linegap }
+          { \exp_not:n { #1 } }
+      },
     punct .value_required:n = true
   }
 %%%% ^^X <=|
@@ -518,6 +532,13 @@
     magstyle .choice:,
     magstyle / nil .code:n = { \bool_set_false:N \l__ncls_font_xreal_bool },
     magstyle / xreal .code:n = { \bool_set_true:N \l__ncls_font_xreal_bool },
+    magstyle / unknown .code:n =
+      {
+        \msg_error:nnxxx { ncls } { unknown-choice }
+          { magstyle }
+          { nil,~xreal }
+          { \exp_not:n { #1 } }
+      },
     magstyle .value_required:n = true,
     magstyle .initial:n = { xreal }
   }
@@ -696,7 +717,64 @@
     scriptsize / list .initial:n = { \relax },
     tinysize / list .initial:n = { \relax }
   }
-%%%% <=|
+%%%% ^^X <=|
+%%%%% ^^X <=|
+%%%%% ^^X 版面相關配置 |=>
+%%%% ^^X 邊距 |=>
+\bool_new:N \l__ncls_margin_method_ratio_bool
+\keys_define:nn { ncls }
+  {
+    margin_method .choice:,
+    margin_method / value .code:n = { \bool_set_true:N \l__ncls_margin_method_ratio_bool },
+    margin_method / ratio .code:n = { \bool_set_false:N \l__ncls_margin_method_ratio_bool },
+    margin_method / unknown .code:n =
+      {
+        \msg_error:nnxxx { ncls } { unknown-choice }
+          { margin_method }
+          { value,~ratio }
+          { \exp_not:n { #1 } }
+      },
+    margin_method .value_required = true,
+    margin_method .initial:n = { ratio }
+  }
+\tl_new:N \l__ncls_margin_ratio_text_height_tl
+\tl_new:N \l__ncls_margin_ratio_text_width_tl
+\keys_define:nn { ncls }
+  {
+    text / height .tl_set:N = \l__ncls_margin_ratio_text_height_tl,
+    text / height .value_required:n = true,
+    text / height .initial:n = { 0.83 \paperheight },
+    text / width .tl_set:N = \l__ncls_margin_ratio_text_width_tl,
+    text / width .value_required:n = true,
+    text / width .initial:n = { 0.76 \paperwidth }
+  }
+\str_new:N \l__ncls_margin_ratio_vertical_str
+\str_new:N \l__ncls_margin_ratio_horizontal_str
+\keys_define:nn { ncls }
+  {
+    margin / vratio .str_set:N = \l__ncls_margin_ratio_vertical_str,
+    margin / vratio .value_required:n = true,
+    margin / vratio .initial:n = { 1:1 },
+    margin / hratio .str_set:N = \l__ncls_margin_ratio_horizontal_str,
+    margin / hratio .value_required:n = true,
+    margin / hratio .initial:n = { 1:1 }
+  }
+\tl_new:N \l__ncls_margin_value_vertical_top_tl
+\tl_new:N \l__ncls_margin_value_vertical_bottom_tl
+\tl_new:N \l__ncls_margin_value_horizontal_left_tl
+\tl_new:N \l__ncls_margin_value_horizontal_right_tl
+\keys_define:nn { ncls }
+  {
+    margin / vtvalue .tl_set:N = \l__ncls_margin_value_vertical_top_tl,
+    margin / vtvalue .value_required:n = true,
+    margin / vbvalue .tl_set:N = \l__ncls_margin_value_vertical_bottom_tl,
+    margin / vbvalue .value_required:n = true,
+    margin / hlvalue .tl_set:N = \l__ncls_margin_value_horizontal_left_tl,
+    margin / hlvalue .value_required:n = true,
+    margin / hrvalue .tl_set:N = \l__ncls_margin_value_horizontal_right_tl,
+    margin / hrvalue .value_required:n = true
+  }
+%%%% ^^X <=|
 %%%%% ^^X <=|
 %%%%% ^^X 初始化處理 |=>
 \__ncls_keyoptions_process:n { ncls }
@@ -1209,7 +1287,30 @@
 \__ncls_macro_release:N \__ncls_font_declareshape:nnnn
 %%%% ^^X <=|
 %%%%% ^^X <=|
+%%%%% ^^X 版面配置 |=>
+%%%% ^^X 頁邊距 |=>
+\bool_if:NTF \l__ncls_margin_method_ratio_bool
+  {
+    % TODO
+  }
+  {
+    % TODO
+  }
+%%%% ^^X <=|
+%%%% ^^X 清理內存 |=>
+\__ncls_macro_release:N \l__ncls_margin_method_ratio_bool
+\__ncls_macro_release:N \l__ncls_margin_ratio_text_height_tl
+\__ncls_macro_release:N \l__ncls_margin_ratio_text_width_tl
+\__ncls_macro_release:N \l__ncls_margin_ratio_vertical_str
+\__ncls_macro_release:N \l__ncls_margin_ratio_horizontal_str
+\__ncls_macro_release:N \l__ncls_margin_value_vertical_top_tl
+\__ncls_macro_release:N \l__ncls_margin_value_vertical_bottom_tl
+\__ncls_macro_release:N \l__ncls_margin_value_horizontal_left_tl
+\__ncls_macro_release:N \l__ncls_margin_value_horizontal_right_tl
+%%%% ^^X <=|
+%%%%% ^^X <=|
 %%%%%% ^^X <=|
 %%%%%% ^^X 退場 |=>
-\relax \endinput
+\relax \endinput % \relax is for preventing \endinput to be scanned by docstrip
+                 % and stuck our TeX after finished reading ncls.
 %%%%%% ^^X <=|

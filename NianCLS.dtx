@@ -38,7 +38,7 @@ NianCLS, 年文檔類
 %</internal>
 %<*driver>
 \makeatletter
-  \def\ltj@stdmcfont{SourceHanSerifSC}
+  \def\ltj@stdmcfont{NotoSerifCJKSC}
   \def\ltj@stdyokojfm{eva/{smpl,nstd}}
 \makeatother
 \documentclass[twoside]{ltjsarticle}
@@ -51,7 +51,7 @@ NianCLS, 年文檔類
 \def\MakePrivateLetters{\makeatletter\catcode`\_=11\catcode`\:=11}
 \usepackage{luatexja-fontspec}
 \setmainfont{Linux Libertine O}
-\setmainjfont{SourceHan Serif SC}[YokoFeatures={JFM={eva/{smpl,nstd} }}]
+\setmainjfont{Noto Serif CJK SC}[YokoFeatures={JFM={eva/{smpl,nstd} }}]
 \setsansfont{Linux Biolinum O}
 \setmonofont{Iosevka Slab}[Scale=0.694,FakeStretch=1.2]
 \def\LuaTeX{Lua\kern-.2ex\TeX}
@@ -418,6 +418,13 @@ NianCLS, 年文檔類
         \bool_set_false:N \l_@@_layout_openleft_bool
         \bool_set_true:N \l_@@_layout_openright_bool
       },
+    doctype / unknown .code:n =
+      {
+        \msg_error:nnxxx { ncls } { unknown-choice }
+          { doctype }
+          { article,~report,~book }
+          { \exp_not:n { #1 } }
+      },
     doctype .value_required:n = true,
     doctype .initial:n = { article }
   }
@@ -772,6 +779,13 @@ NianCLS, 年文檔類
     punct .multichoice:,
     punct / hanging .code:n = { \bool_set_true:N \l_@@_jfm_hanging_bool },
     punct / linegap .code:n = { \bool_set_true:N \l_@@_jfm_linegap_bool },
+    punct / unknown .code:n =
+      {
+        \msg_error:nnxxx { ncls } { unknown-choice }
+          { punct }
+          { hanging,~linegap }
+          { \exp_not:n { #1 } }
+      },
     punct .value_required:n = true
   }
 %    \end{macrocode}
@@ -786,6 +800,13 @@ NianCLS, 年文檔類
     magstyle .choice:,
     magstyle / nil .code:n = { \bool_set_false:N \l_@@_font_xreal_bool },
     magstyle / xreal .code:n = { \bool_set_true:N \l_@@_font_xreal_bool },
+    magstyle / unknown .code:n =
+      {
+        \msg_error:nnxxx { ncls } { unknown-choice }
+          { magstyle }
+          { nil,~xreal }
+          { \exp_not:n { #1 } }
+      },
     magstyle .value_required:n = true,
     magstyle .initial:n = { xreal }
   }
@@ -997,7 +1018,89 @@ NianCLS, 年文檔類
     tinysize / list .initial:n = { \relax }
   }
 %    \end{macrocode}
-%%%% <=|
+%%%% ^^X <=|
+%%%%% ^^X <=|
+%%%%% ^^X 版面相關配置 |=>
+% \subsection{版面相關配置}
+%%%% ^^X 邊距 |=>
+% 此處設置邊距。需要考慮直接設置邊距四個變量的值以及通過給出版面大小及邊距比例計
+% 算得出邊距變量的值兩種情況。此處不對CJK排版作任何優化、在後面實現時再作調整。
+% \par
+% 首先選擇設置方案。
+%    \begin{macrocode}
+\bool_new:N \l_@@_margin_method_ratio_bool
+\keys_define:nn { ncls }
+  {
+    margin_method .choice:,
+    margin_method / value .code:n = { \bool_set_true:N \l_@@_margin_method_ratio_bool },
+    margin_method / ratio .code:n = { \bool_set_false:N \l_@@_margin_method_ratio_bool },
+    margin_method / unknown .code:n =
+      {
+        \msg_error:nnxxx { ncls } { unknown-choice }
+          { margin_method }
+          { value,~ratio }
+          { \exp_not:n { #1 } }
+      },
+    margin_method .value_required = true,
+    margin_method .initial:n = { ratio }
+  }
+%    \end{macrocode}
+% 隨後我們提供比例的設置界面。分別有版面長寬，豎直、水平方向邊距比例四個內容。至
+% 於默認情況就參考八登崇之的BXjscls，即：
+% \begin{verbatim}
+%   hscale=0.76, hmarginratio=1:1
+%   vscale=0.83, vmarginratio=1:1
+% \end{verbatim}
+% 實現細節：版面數據只提供一個接口，但提供紙面寬度和長度的單位（他們同時也是默認
+% 單位）；而邊距比例則同時支持浮點數\verb|0.9|和\verb|9:10|的等價寫法。
+% 注意，只有使用ratio時才需要設置版面數據。而顯式設置邊距數據時不可也不需要設置
+% 版面數據。先是版面數據。
+%    \begin{macrocode}
+\tl_new:N \l_@@_margin_ratio_text_height_tl
+\tl_new:N \l_@@_margin_ratio_text_width_tl
+\keys_define:nn { ncls }
+  {
+    text / height .tl_set:N = \l_@@_margin_ratio_text_height_tl,
+    text / height .value_required:n = true,
+    text / height .initial:n = { 0.83 \paperheight },
+    text / width .tl_set:N = \l_@@_margin_ratio_text_width_tl,
+    text / width .value_required:n = true,
+    text / width .initial:n = { 0.76 \paperwidth }
+  }
+%    \end{macrocode}
+% 隨後是邊距比例兩個。
+%    \begin{macrocode}
+\str_new:N \l_@@_margin_ratio_vertical_str
+\str_new:N \l_@@_margin_ratio_horizontal_str
+\keys_define:nn { ncls }
+  {
+    margin / vratio .str_set:N = \l_@@_margin_ratio_vertical_str,
+    margin / vratio .value_required:n = true,
+    margin / vratio .initial:n = { 1:1 },
+    margin / hratio .str_set:N = \l_@@_margin_ratio_horizontal_str,
+    margin / hratio .value_required:n = true,
+    margin / hratio .initial:n = { 1:1 }
+  }
+%    \end{macrocode}
+% 下面設置第二種直接給出四個邊距的接口。無默認值。
+%    \begin{macrocode}
+\tl_new:N \l_@@_margin_value_vertical_top_tl
+\tl_new:N \l_@@_margin_value_vertical_bottom_tl
+\tl_new:N \l_@@_margin_value_horizontal_left_tl
+\tl_new:N \l_@@_margin_value_horizontal_right_tl
+\keys_define:nn { ncls }
+  {
+    margin / vtvalue .tl_set:N = \l_@@_margin_value_vertical_top_tl,
+    margin / vtvalue .value_required:n = true,
+    margin / vbvalue .tl_set:N = \l_@@_margin_value_vertical_bottom_tl,
+    margin / vbvalue .value_required:n = true,
+    margin / hlvalue .tl_set:N = \l_@@_margin_value_horizontal_left_tl,
+    margin / hlvalue .value_required:n = true,
+    margin / hrvalue .tl_set:N = \l_@@_margin_value_horizontal_right_tl,
+    margin / hrvalue .value_required:n = true
+  }
+%    \end{macrocode}
+%%%% ^^X <=|
 %%%%% ^^X <=|
 %%%%% ^^X 初始化處理 |=>
 % \subsection{初始化處理}
@@ -1838,12 +1941,50 @@ NianCLS, 年文檔類
 %    \end{macrocode}
 %%%% ^^X <=|
 %%%%% ^^X <=|
+%%%%% ^^X 版面配置 |=>
+% \subsection{版面配置}
+%%%% ^^X 頁邊距 |=>
+% \subsubsection{頁邊距設定}
+% 這裏設置頁邊距，這裏的配置需要支持：
+% \begin{itemize}
+% \item 直接設置上下左右／統一單一值的頁邊距值；
+% \item 設置版面長寬，以及（可選的）邊距的比例。
+% \end{itemize}
+% 需要支持的特殊情況有默認行爲，一般情況爲使行長爲字面寬度的整數倍（考慮
+% \verb|\kanjiskip|）、以及在打開plain模式（非misc即圖文混排）時版面長度爲字面高
+% 度加上行間距的整數倍減去一個行間距。首先根據兩種情況分別處理。
+%    \begin{macrocode}
+\bool_if:NTF \l_@@_margin_method_ratio_bool
+  {
+    % TODO
+  }
+  {
+    % TODO
+  }
+%    \end{macrocode}
+%%%% ^^X <=|
+%%%% ^^X 清理內存 |=>
+% 內存管理。移除不必要的宏。
+%    \begin{macrocode}
+\@@_macro_release:N \l_@@_margin_method_ratio_bool
+\@@_macro_release:N \l_@@_margin_ratio_text_height_tl
+\@@_macro_release:N \l_@@_margin_ratio_text_width_tl
+\@@_macro_release:N \l_@@_margin_ratio_vertical_str
+\@@_macro_release:N \l_@@_margin_ratio_horizontal_str
+\@@_macro_release:N \l_@@_margin_value_vertical_top_tl
+\@@_macro_release:N \l_@@_margin_value_vertical_bottom_tl
+\@@_macro_release:N \l_@@_margin_value_horizontal_left_tl
+\@@_macro_release:N \l_@@_margin_value_horizontal_right_tl
+%    \end{macrocode}
+%%%% ^^X <=|
+%%%%% ^^X <=|
 %%%%%% ^^X <=|
 %%%%%% ^^X 退場 |=>
 % \section{退場}
 % 以上。
 %    \begin{macrocode}
-\relax \endinput
+\relax \endinput % \relax is for preventing \endinput to be scanned by docstrip
+                 % and stuck our TeX after finished reading ncls.
 %    \end{macrocode}
 %%%%%% ^^X <=|
 \endinput

@@ -2,9 +2,12 @@ temp-file = NianCLS.hd NianCLS.glo NianCLS.gls
 
 .PHONY : build extract clean test
 
+all : extract build clean
+
 build : NianCLS.dtx build.sh
 	lualatex NianCLS.dtx
-	dash build.sh
+	makeindex -s gglo.ist -o NianCLS.gls NianCLS.glo
+	makeindex -s gind.ist -o NianCLS.ind NianCLS.idx
 	lualatex NianCLS.dtx
 
 extract : NianCLS.dtx

@@ -1,12 +1,9 @@
 # NianCLS
 
-**Still Under (Active) Development**
+Archived since I no longer uses the over complicated LaTeX and switched to plainTeX. This document class has finished its font setting up part using the modified NFSS2 which is probably the most crucial part.
+
+If anyone would like to continue develop it, please let me know.
 
 ## Introduction
-A document class which provides a unified interface for Japanese and (Traditional & Simplified) Chinese typesetting.
-It is intended to be an enhanced **basic**/**standard** document class which is fully customisable, from those `\skip` dimens to the layout, and to the section types.
-Macro-packages like `geometry` or `(luatexja)-fontspec` need not be loaded as this document class offers all (more) features and adapts these to CJ typesetting requirements better.
 
-## Development Log
-`Starts from 2023-08-21`
- - 2023-08-21: test font and page layout functions and starts to develop font size functions like `\normalsize`.
+A document class which provides a unified interface for Japanese and (Traditional & Simplified) Chinese typesetting. It is intended to be an enhanced **basic**/**standard** document class.
